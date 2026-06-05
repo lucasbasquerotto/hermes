@@ -45,9 +45,11 @@ On first boot, the VM will:
 
 The startup script will restore your Hermes data (skills, config, state DB, .env, credentials) from any S3-compatible storage if the credentials are present in `/opt/data/.env`.
 
+The flow is: `vagrant up` provisions the VM and starts Hermes **raw** (fresh, no restore). Then you add the `.env` file manually, and re-run the provisioner — this time the startup script finds the credentials and pulls your data from S3.
+
 ### Step-by-step
 
-1. **Start the VM** (it will provision but skip the restore):
+1. **Start the VM.** Vagrant runs the provisioners immediately, so Hermes starts raw (no restored data yet):
 
    > **Hyper-V users:** `vagrant up --provider hyperv`
 
@@ -80,7 +82,7 @@ The startup script will restore your Hermes data (skills, config, state DB, .env
    exit
    ```
 
-3. **Re-run provisioning** to trigger the restore and start Hermes:
+3. **Re-run provisioning.** The startup script now finds `.env` with valid S3 credentials and restores your data:
 
    ```bash
    vagrant provision
