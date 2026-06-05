@@ -24,8 +24,10 @@ Vagrant.configure("2") do |config|
   end
 
   # ── Network ─────────────────────────────────────────────────────────
-  # Private network for static IP (reachable from host)
-  config.vm.network "private_network", type: "dhcp"
+  # Private network for DHCP IP (VirtualBox only — Hyper-V uses its default switch)
+  config.vm.provider "virtualbox" do |_vb, override|
+    override.vm.network "private_network", type: "dhcp"
+  end
 
   # Expose gateway & dashboard ports to host
   config.vm.network "forwarded_port", guest: 8642, host: 8642, host_ip: "127.0.0.1"
@@ -41,7 +43,7 @@ Vagrant.configure("2") do |config|
 
     # Install prerequisites
     apt-get update -qq
-    apt-get install -y -qq ca-certificates curl
+    apt-get install -y -qq ca-certificates curl git
 
     # Add Docker's official GPG key and repository
     install -m 0755 -d /etc/apt/keyrings
@@ -73,8 +75,9 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", name: "setup-hermes", privileged: true, inline: <<-SHELL
     set -euxo pipefail
 
-    # Install git
-    apt-get install -y -qq git
+    # Add a brief pause for network stability (Docker restart can briefly
+    # disrupt systemd-resolved, causing transient DNS failures)
+    sleep 2
 
     # Clone this repo (first boot — bootstrap itself)
     if [ ! -d /opt/hermes-repo ]; then
