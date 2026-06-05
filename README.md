@@ -30,6 +30,8 @@ cd hermes
 vagrant up
 ```
 
+> **Hyper-V users:** run `vagrant up --provider hyperv` instead.
+
 On first boot, the VM will:
 
 1. Install Docker Engine + Compose
@@ -47,6 +49,8 @@ The startup script will restore your Hermes data (skills, config, state DB, .env
 
 1. **Start the VM** (it will provision but skip the restore):
 
+   > **Hyper-V users:** `vagrant up --provider hyperv`
+
    ```bash
    vagrant up
    ```
@@ -56,14 +60,23 @@ The startup script will restore your Hermes data (skills, config, state DB, .env
    ```bash
    vagrant ssh
    sudo mkdir -p /opt/data
-   sudo tee /opt/data/.env << 'EOF'
+   sudo nano /opt/data/.env
+   ```
+
+   > You can use any text editor (nano, vim, vi, etc.). Paste the following variables:
+
+   ```env
    S3_ACCESS_KEY=your_s3_access_key
    S3_SECRET_KEY=your_s3_secret_key
    S3_ENDPOINT=https://s3.us-east-005.backblazeb2.com
    S3_REGION=us-east-005
    S3_BUCKET=hermes-nexuslbs
    HERMES_DASHBOARD=1
-   EOF
+   ```
+
+   Save and exit, then return to your host shell:
+
+   ```bash
    exit
    ```
 
