@@ -59,8 +59,8 @@ The startup script will restore your Hermes data (skills, config, state DB, .env
    sudo tee /opt/data/.env << 'EOF'
    S3_ACCESS_KEY=your_s3_access_key
    S3_SECRET_KEY=your_s3_secret_key
-   S3_ENDPOINT=https://s3.us-west-001.backblazeb2.com
-   S3_REGION=us-west-001
+   S3_ENDPOINT=https://s3.us-east-005.backblazeb2.com
+   S3_REGION=us-east-005
    S3_BUCKET=hermes-nexuslbs
    HERMES_DASHBOARD=1
    EOF
@@ -77,18 +77,18 @@ Alternative: skip S3 restore entirely and configure Hermes from scratch after it
 
 ### Supported S3 Providers
 
-| Provider | Example Endpoint | Region |
-|---|---|---|
-| Backblaze B2 | `https://s3.<region>.backblazeb2.com` | `us-west-001`, `us-east-005`, etc. |
-| AWS S3 | `https://s3.<region>.amazonaws.com` | `us-east-1`, `eu-west-1`, etc. |
+| Provider | Example Endpoint | Notes |
+|----------|-----------------|-------|
+| Backblaze B2 | `https://s3.<region>.backblazeb2.com` | Region: `us-east-005` (default for this repo), `us-west-001`, etc. |
+| AWS S3 | `https://s3.<region>.amazonaws.com` | e.g. `us-east-1`, `eu-west-1` |
 | MinIO | `http://<host>:9000` | Any value (e.g. `us-east-1`) |
 | GCP Cloud Storage | Use S3-compatible interop endpoint | — |
 
 For **Backblaze B2**, generate S3-compatible credentials:
 1. Go to B2 Dashboard → **App Keys**
-2. **Add a New Application Key**
-3. Check **"S3 Compatible"**
-4. Save and copy the generated key ID and secret
+2. **Add a New Application Key** (do NOT use the Master Key — create a dedicated one)
+3. Save and copy the generated key ID and secret — all non-master keys work with the S3 API automatically
+4. **Recommended bucket type:** Private & Encrypted (not Public)
 
 ## Ports
 

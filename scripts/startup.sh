@@ -51,7 +51,7 @@ provider = Other
 access_key_id = ${S3_ACCESS_KEY}
 secret_access_key = ${S3_SECRET_KEY}
 endpoint = ${S3_ENDPOINT}
-region = ${S3_REGION:-us-east-1}
+region = ${S3_REGION:-us-east-005}
 EOF
 
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Downloading data from S3 (bucket: ${S3_BUCKET})..." | tee -a "$LOG"
