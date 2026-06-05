@@ -35,18 +35,46 @@ Vagrant.configure("2") do |config|
   config.ssh.forward_agent = false
   config.ssh.insert_key = true
 
-  # ── Docker Installation ─────────────────────────────────────────────
-  config.vm.provision "docker" do |d|
-    # Installs Docker Engine + Compose plugin
-  end
-
-  # ── Clone Repo + Run Startup ───────────────────────────────────────
-  config.vm.provision "shell", privileged: true, inline: <<-SHELL
+  # ── Install Docker Engine + Compose ─────────────────────────────────
+  config.vm.provision "shell", name: "install-docker", privileged: true, inline: <<-SHELL
     set -euxo pipefail
 
-    # Install dependencies
+    # Install prerequisites
     apt-get update -qq
-    apt-get install -y -qq git curl ca-certificates
+    apt-get install -y -qq ca-certificates curl
+
+    # Add Docker's official GPG key and repository
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    chmod a+r /etc/apt/keyrings/docker.asc
+
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    # Install Docker Engine, CLI, containerd, and Compose plugin
+    apt-get update -qq
+    apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    # Add vagrant user to docker group (so non-sudo docker works)
+    usermod -aG docker vagrant
+
+    # Enable and start Docker
+    systemctl enable docker
+    systemctl start docker
+
+    # Verify installation
+    docker --version
+    docker compose version
+  SHELL
+
+  # ── Clone Repo + Run Startup ───────────────────────────────────────
+  config.vm.provision "shell", name: "setup-hermes", privileged: true, inline: <<-SHELL
+    set -euxo pipefail
+
+    # Install git
+    apt-get install -y -qq git
 
     # Clone this repo (first boot — bootstrap itself)
     if [ ! -d /opt/hermes-repo ]; then
