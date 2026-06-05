@@ -20,7 +20,7 @@ Host Machine (Windows / macOS / Linux)
 
 - [Vagrant](https://www.vagrantup.com/downloads) (supports VirtualBox or Hyper-V)
 - [VirtualBox](https://www.virtualbox.org/) or Hyper-V enabled on Windows
-- 4 GB RAM + 2 vCPUs available for the VM
+- 8 GB RAM + 2 vCPUs available for the VM
 
 ## Quick Start
 
@@ -103,7 +103,7 @@ Both are only exposed to `127.0.0.1` on the host.
 
 | Variable | Default | Where to change |
 |---|---|---|
-| VM memory | 4096 MB | `Vagrantfile` |
+| VM memory | 8192 MB | `Vagrantfile` |
 | VM CPUs | 2 | `Vagrantfile` |
 | Hermes container memory | 4 GB | `docker-compose.yml` |
 | Hermes container CPUs | 2.0 | `docker-compose.yml` |
