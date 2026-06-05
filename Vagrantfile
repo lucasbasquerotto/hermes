@@ -3,21 +3,22 @@
 
 Vagrant.configure("2") do |config|
   # ── Base Box ─────────────────────────────────────────────────────────
-  config.vm.box = "ubuntu/jammy64"
-  config.vm.box_version = "20250528.0.0"
+  config.vm.box = "generic/ubuntu2204"
 
   # ── No Host File Sharing (security) ─────────────────────────────────
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
   # ── VM Resources ────────────────────────────────────────────────────
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "4096"
+    vb.memory = "8192"
+    vb.maxmemory = "8192" 
     vb.cpus   = 2
     vb.name   = "hermes-agent"
   end
 
   config.vm.provider "hyperv" do |hv|
-    hv.memory = "4096"
+    hv.memory = "8192"
+    hv.maxmemory = "8192" 
     hv.cpus   = 2
     hv.vmname = "hermes-agent"
     hv.enable_enhanced_session_mode = false
