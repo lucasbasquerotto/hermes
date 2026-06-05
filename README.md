@@ -1,6 +1,6 @@
 # Hermes Agent — Isolated Vagrant + Docker Deployment
 
-Deploy [Hermes Agent](https://hermes-agent.nousresearch.com) in an isolated VM using Vagrant, with Docker socket access and optional data restore from Backblaze B2.
+Deploy [Hermes Agent](https://hermes-agent.nousresearch.com) in an isolated VM using Vagrant, with Docker socket access and optional data restore from S3-compatible storage (Backblaze B2, AWS S3, MinIO, etc.).
 
 ## Architecture
 
@@ -35,13 +35,13 @@ On first boot, the VM will:
 1. Install Docker Engine + Compose
 2. Clone this repo to `/opt/hermes-repo`
 3. Run [`scripts/startup.sh`](scripts/startup.sh) which:
-   - Attempts a B2 restore if credentials are available (see below)
+   - Attempts an S3 restore if credentials are present (see below)
    - Starts the Hermes container via `docker compose up -d`
    - Restores cron jobs from the existing `cron/jobs.json`
 
-## Restoring from Backblaze B2
+## Restoring from S3 Backup
 
-The startup script will restore your Hermes data (skills, config, state DB) from Backblaze B2 if the credentials are present in `/opt/data/.env`.
+The startup script will restore your Hermes data (skills, config, state DB, .env, credentials) from any S3-compatible storage if the credentials are present in `/opt/data/.env`.
 
 ### Step-by-step
 
@@ -57,8 +57,11 @@ The startup script will restore your Hermes data (skills, config, state DB) from
    vagrant ssh
    sudo mkdir -p /opt/data
    sudo tee /opt/data/.env << 'EOF'
-   BACKBLAZE_KEY_ID=your_key_id
-   BACKBLAZE_APPLICATION_KEY=your_app_key
+   S3_ACCESS_KEY=your_s3_access_key
+   S3_SECRET_KEY=your_s3_secret_key
+   S3_ENDPOINT=https://s3.us-west-001.backblazeb2.com
+   S3_REGION=us-west-001
+   S3_BUCKET=hermes-nexuslbs
    HERMES_DASHBOARD=1
    EOF
    exit
@@ -70,7 +73,22 @@ The startup script will restore your Hermes data (skills, config, state DB) from
    vagrant provision
    ```
 
-Alternative: skip B2 restore entirely and configure Hermes from scratch after it starts.
+Alternative: skip S3 restore entirely and configure Hermes from scratch after it starts.
+
+### Supported S3 Providers
+
+| Provider | Example Endpoint | Region |
+|---|---|---|
+| Backblaze B2 | `https://s3.<region>.backblazeb2.com` | `us-west-001`, `us-east-005`, etc. |
+| AWS S3 | `https://s3.<region>.amazonaws.com` | `us-east-1`, `eu-west-1`, etc. |
+| MinIO | `http://<host>:9000` | Any value (e.g. `us-east-1`) |
+| GCP Cloud Storage | Use S3-compatible interop endpoint | — |
+
+For **Backblaze B2**, generate S3-compatible credentials:
+1. Go to B2 Dashboard → **App Keys**
+2. **Add a New Application Key**
+3. Check **"S3 Compatible"**
+4. Save and copy the generated key ID and secret
 
 ## Ports
 
@@ -96,3 +114,4 @@ Both are only exposed to `127.0.0.1` on the host.
 - Docker socket is mounted → Hermes can run Docker commands inside the VM
 - Gateway and dashboard ports are forwarded only to `127.0.0.1` on the host
 - SSH agent forwarding is disabled
+- S3 credentials are stored in `/opt/data/.env` (inside the VM, backed up to S3)
