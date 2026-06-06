@@ -130,3 +130,7 @@ Both are only exposed to `127.0.0.1` on the host.
 - Gateway and dashboard ports are forwarded only to `127.0.0.1` on the host
 - SSH agent forwarding is disabled
 - S3 credentials are stored in `/opt/data/.env` (inside the VM, backed up to S3)
+
+## Verification
+
+Repository last tested: 2026-06-06. Push pipeline working.
