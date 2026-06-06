@@ -94,6 +94,12 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ]; then
   cd "$REPO_DIR"
   docker compose up -d 2>&1 | tee -a "$LOG"
 
+  # Also start monitoring services (Grafana, Prometheus, cAdvisor, Loki)
+  if [ -f "$REPO_DIR/services/docker-compose.yml" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting monitoring services..." | tee -a "$LOG"
+    docker compose -f "$REPO_DIR/services/docker-compose.yml" up -d 2>&1 | tee -a "$LOG"
+  fi
+
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Waiting for Hermes to start..." | tee -a "$LOG"
   for i in $(seq 1 30); do
     if curl -sf http://127.0.0.1:8642/health > /dev/null 2>&1; then
