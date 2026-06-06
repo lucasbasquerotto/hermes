@@ -1,3 +1,6 @@
+x-logging: &journald
+  driver: journald
+
 services:
   hermes:
     image: nousresearch/hermes-agent:v2026.5.29.2
@@ -15,6 +18,7 @@ services:
     environment:
       - HERMES_DASHBOARD=1
       - HERMES_DASHBOARD_HOST=127.0.0.1
+    logging: *journald
     deploy:
       resources:
         limits:
@@ -26,6 +30,7 @@ services:
     container_name: hermes-toolbox
     restart: unless-stopped
     command: sleep infinity
+    logging: *journald
     volumes:
       - /var/data:/var/data:ro
       - /opt/hermes-repo:/opt/hermes-repo:rw
