@@ -27,6 +27,14 @@ set -e
 # don't try to write to /root.
 export HOME=/opt/data
 
+# Ensure docker group (GID 999) exists and hermes user is a member.
+# This allows access to /var/run/docker.sock when group_add is configured
+# in docker-compose.yml.
+if ! getent group docker >/dev/null 2>&1; then
+    groupadd -g 999 docker 2>/dev/null || true
+fi
+usermod -aG docker hermes 2>/dev/null || true
+
 cd /opt/data
 # shellcheck disable=SC1091
 . /opt/hermes/.venv/bin/activate
