@@ -1,6 +1,11 @@
 x-logging: &journald
   driver: journald
 
+networks:
+  hermes-net:
+    driver: bridge
+    name: hermes-net
+
 services:
   hermes:
     build:
@@ -47,8 +52,3 @@ services:
       - /var/data:/var/data:ro
       - /opt/hermes-repo:/opt/hermes-repo:rw
       - /opt/workspace:/opt/workspace:rw
-
-networks:
-  hermes-net:
-    driver: bridge
-    name: hermes-net

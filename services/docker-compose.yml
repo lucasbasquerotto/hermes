@@ -1,0 +1,77 @@
+x-logging:
+  logging: &logging
+    options:
+      max-size: 50m
+
+networks:
+  hermes-net:
+    external: true
+    name: hermes-net
+  lvg:
+    driver: bridge
+    internal: true
+
+volumes:
+  loki-vol:
+    name: loki
+  grafana-vol:
+    name: grafana
+
+services:
+  vector:
+    container_name: hermes-vector
+    build:
+      dockerfile: vector/Dockerfile
+      args:
+        VECTOR_IMAGE: timberio/vector:0.55.0-debian
+    restart: unless-stopped
+    volumes:
+      - /var/log/journal:/var/log/journal:ro
+      - /run/systemd/journal:/run/systemd/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /opt/data/backup/vector:/var/lib/vector:rw
+    user: "0"
+    networks:
+      - lvg
+    depends_on:
+      - loki
+    mem_limit: 500M
+    logging: *logging
+
+  loki:
+    container_name: hermes-loki
+    build:
+      dockerfile: loki/Dockerfile
+      args:
+        LOKI_IMAGE: grafana/loki:3.7.2
+    restart: unless-stopped
+    volumes:
+      - loki-vol:/loki:rw
+      - /docker/vol/sync/loki:/docker/vol/sync/loki:rw
+    networks:
+      - lvg
+    command: -config.file=/etc/loki/loki-config.yaml
+    mem_limit: 500M
+    logging: *logging
+
+  grafana:
+    container_name: hermes-grafana
+    build:
+      dockerfile: grafana/Dockerfile
+      args:
+        GRAFANA_IMAGE: grafana/grafana:13.0.1
+    restart: unless-stopped
+    env_file:
+      - /opt/data/credentials/services.env
+    volumes:
+      - grafana-vol:/var/lib/grafana:rw
+      - /opt/data/backup/grafana:/opt/data/backup/grafana:rw
+    networks:
+      - hermes-net
+      - lvg
+    ports:
+      - 3000:3000
+    depends_on:
+      - loki
+    mem_limit: 500M
+    logging: *logging

@@ -1,3 +1,11 @@
+x-logging: &journald
+  driver: journald
+
+networks:
+  hermes-net:
+    external: true
+    name: hermes-net
+
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -8,8 +16,4 @@ services:
     command: tunnel --no-autoupdate run
     networks:
       - hermes-net
-
-networks:
-  hermes-net:
-    external: true
-    name: hermes-net
+    logging: *journald
