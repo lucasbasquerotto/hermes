@@ -117,3 +117,25 @@ services:
     mem_limit: 500M
     logging:
       driver: journald
+
+  code-server:
+    image: linuxserver/code-server:4.123.0
+    container_name: hermes-files
+    restart: unless-stopped
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Etc/UTC
+      - DEFAULT_WORKSPACE=/opt/hermes-repo
+    volumes:
+      - /opt/data:/opt/data:ro
+      - /opt/hermes-repo:/opt/hermes-repo:ro
+      - /opt/workspace:/opt/workspace:ro
+      - ./files/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
+    ports:
+      - 8443:8443
+    networks:
+      - hermes-net
+    mem_limit: 1G
+    logging:
+      driver: journald
