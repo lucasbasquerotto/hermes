@@ -241,3 +241,9 @@ source = """
 }
 .level = upcase(string!(.metadata.level))
 """
+
+[transforms.skip_loki_logs]
+type = "filter"
+inputs = ["remap_logs"]
+condition.type = "vrl"
+condition.source = '.container != "hermes-loki"'
