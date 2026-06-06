@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # add hermes to root + docker groups, grant passwordless sudo
 RUN apt-get update && apt-get install -y --no-install-recommends sudo \
     && rm -rf /var/lib/apt/lists/* \
-    && groupadd -g 999 dockerhost \
-    && usermod -aG 999,root hermes \
+    && groupdel docker 2>/dev/null || true \
+    && groupadd -g 999 docker \
+    && usermod -aG docker,root hermes \
     && echo "hermes ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/hermes \
     && chmod 440 /etc/sudoers.d/hermes
 
