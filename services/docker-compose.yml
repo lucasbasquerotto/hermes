@@ -104,6 +104,8 @@ services:
       dockerfile: Dockerfile
     container_name: hermes-prometheus
     restart: unless-stopped
+    extra_hosts:
+      - 'host:host-gateway'
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.retention.time=7d'
