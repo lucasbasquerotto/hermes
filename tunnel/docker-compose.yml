@@ -1,0 +1,10 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-tunnel
+    restart: unless-stopped
+    env_file:
+      - type: file
+        path: /opt/data/credentials/tunnel.env          
+        required: true
+    command: tunnel run
