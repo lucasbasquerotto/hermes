@@ -111,7 +111,18 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ]; then
     sleep 2
   done
 
-  # ── 6. Provision Grafana dashboards ─────────────────────────────────
+  # ── 6. Restore Grafana database from backup (if exists) ──────────────
+  if [ -f "$HERMES_HOME/backup/grafana/grafana.db" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Grafana db backup found — restoring..." | tee -a "$LOG"
+    docker stop hermes-grafana 2>&1 | tee -a "$LOG"
+    docker cp "$HERMES_HOME/backup/grafana/grafana.db" hermes-grafana:/var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
+    docker start hermes-grafana 2>&1 | tee -a "$LOG"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Grafana db restore done." | tee -a "$LOG"
+  else
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] No grafana db backup found — skipping restore." | tee -a "$LOG"
+  fi
+
+  # ── 7. Provision Grafana dashboards ─────────────────────────────────
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Provisioning Grafana dashboards..." | tee -a "$LOG"
   GRAFANA_URL="http://localhost:3000" \
   bash "$REPO_DIR/scripts/provision-grafana-dashboards.sh" 2>&1 | tee -a "$LOG" || true
@@ -119,7 +130,7 @@ else
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Docker or compose file not found — start containers manually." | tee -a "$LOG"
 fi
 
-# ── 7. Configure cron from existing jobs ─────────────────────────────
+# ── 8. Configure cron from existing jobs ─────────────────────────────
 if [ -f "$HERMES_HOME/cron/jobs.json" ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Cron jobs found — the scheduler will pick them up automatically." | tee -a "$LOG"
 fi
