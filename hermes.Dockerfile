@@ -8,9 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         docker-compose-v2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Preserve supplementary groups (e.g. docker GID from group_add)
-# when s6 drops privileges to the hermes user
-RUN sed -i 's/s6-setuidgid hermes/s6-setuidgid -D hermes/g' \
-        /opt/hermes/docker/s6-rc.d/main-hermes/run \
-        /opt/hermes/docker/s6-rc.d/dashboard/run \
-        /opt/hermes/docker/main-wrapper.sh
+# When HERMES_ALLOW_ROOT_GATEWAY=1, skip s6-setuidgid so the gateway
+# runs as root and preserves supplementary groups (e.g. docker GID)
+# from group_add. Replaces the original main-wrapper.sh.
+COPY main-wrapper.sh /opt/hermes/docker/main-wrapper.sh
