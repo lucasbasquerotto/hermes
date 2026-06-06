@@ -5,7 +5,7 @@ USER root
 # Install Docker CLI and Compose from Debian repos
 RUN apt-get update && apt-get install -y --no-install-recommends \
         docker.io \
-        docker-compose-v2 \
+        docker-compose \
     && rm -rf /var/lib/apt/lists/*
 
 # When HERMES_ALLOW_ROOT_GATEWAY=1, skip s6-setuidgid so the gateway
