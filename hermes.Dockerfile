@@ -12,3 +12,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # runs as root and preserves supplementary groups (e.g. docker GID)
 # from group_add. Replaces the original main-wrapper.sh.
 COPY main-wrapper.sh /opt/hermes/docker/main-wrapper.sh
+RUN chmod +x /opt/hermes/docker/main-wrapper.sh
