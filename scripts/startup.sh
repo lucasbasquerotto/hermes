@@ -102,11 +102,16 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ]; then
     fi
     sleep 2
   done
+
+  # ── 6. Provision Grafana dashboards ─────────────────────────────────
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Provisioning Grafana dashboards..." | tee -a "$LOG"
+  GRAFANA_URL="http://localhost:3000" \
+  bash "$REPO_DIR/scripts/provision-grafana-dashboards.sh" 2>&1 | tee -a "$LOG" || true
 else
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Docker or compose file not found — start containers manually." | tee -a "$LOG"
 fi
 
-# ── 6. Configure cron from existing jobs ─────────────────────────────
+# ── 7. Configure cron from existing jobs ─────────────────────────────
 if [ -f "$HERMES_HOME/cron/jobs.json" ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Cron jobs found — the scheduler will pick them up automatically." | tee -a "$LOG"
 fi
