@@ -94,6 +94,49 @@ Vagrant.configure("2") do |config|
     docker compose version
   SHELL
 
+  # ── Install Node Exporter (host metrics for Prometheus) ──────────────
+  config.vm.provision "shell", name: "install-node-exporter", privileged: true, inline: <<-SHELL
+    set -euxo pipefail
+
+    VERSION="1.8.2"
+    ARCH="linux-amd64"
+    FILENAME="node_exporter-${VERSION}.${ARCH}"
+    URL="https://github.com/prometheus/node_exporter/releases/download/v${VERSION}/${FILENAME}.tar.gz"
+
+    if [ ! -f /usr/local/bin/node_exporter ]; then
+      cd /tmp
+      curl -fsSL "$URL" -o node_exporter.tar.gz
+      tar xzf node_exporter.tar.gz
+      cp "${FILENAME}/node_exporter" /usr/local/bin/node_exporter
+      rm -rf "${FILENAME}" node_exporter.tar.gz
+    fi
+
+    # Create node_exporter user
+    id -u node_exporter &>/dev/null || useradd -rs /bin/false node_exporter
+
+    # Systemd unit (disabled by default — enable after Prometheus is ready)
+    cat > /etc/systemd/system/node_exporter.service << 'UNIT'
+[Unit]
+Description=Prometheus Node Exporter
+After=network.target
+
+[Service]
+Type=simple
+User=node_exporter
+Group=node_exporter
+ExecStart=/usr/local/bin/node_exporter \\
+  --web.listen-address=:9100 \\
+  --path.rootfs=/
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+    systemctl daemon-reload
+    echo "Node Exporter installed. Enable with: systemctl enable --now node_exporter"
+  SHELL
+
   # ── Clone Repo + Run Startup ───────────────────────────────────────
   config.vm.provision "shell", name: "setup-hermes", privileged: true, inline: <<-SHELL
     set -euxo pipefail

@@ -16,6 +16,8 @@ volumes:
     name: loki
   grafana-vol:
     name: grafana
+  prometheus-vol:
+    name: prometheus
 
 services:
   vector:
@@ -76,6 +78,40 @@ services:
       - 3000:3000
     depends_on:
       - loki
+    mem_limit: 500M
+    logging:
+      driver: journald
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: hermes-cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      - hermes-net
+    mem_limit: 200M
+    logging:
+      driver: journald
+
+  prometheus:
+    build:
+      context: prometheus
+      dockerfile: Dockerfile
+    container_name: hermes-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=7d'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - prometheus-vol:/prometheus:rw
+    networks:
+      - hermes-net
     mem_limit: 500M
     logging:
       driver: journald
