@@ -95,9 +95,11 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ]; then
   docker compose up -d 2>&1 | tee -a "$LOG"
 
   # Also start monitoring services (Grafana, Prometheus, cAdvisor, Loki)
-  if [ -f "$REPO_DIR/services/docker-compose.yml" ]; then
+  if [ -d "$REPO_DIR/services" ]; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting monitoring services..." | tee -a "$LOG"
-    docker compose -f "$REPO_DIR/services/docker-compose.yml" up -d 2>&1 | tee -a "$LOG"
+    cd "$REPO_DIR/services"
+    docker compose up -d 2>&1 | tee -a "$LOG"
+    cd "$REPO_DIR"
   fi
 
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Waiting for Hermes to start..." | tee -a "$LOG"
