@@ -1,0 +1,7 @@
+data_dir = "/var/lib/vector"
+
+[sources.raw_logs]
+type = "socket"
+address = "0.0.0.0:12201"
+mode = "udp"
+decoding.codec = "gelf"
