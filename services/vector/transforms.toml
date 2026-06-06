@@ -19,6 +19,18 @@ if exists(.CONTAINER_NAME) {
     _my_container = .CONTAINER_NAME
     _service_raw = .IMAGE_NAME || ""
     _my_level = .PRIORITY || _my_level
+
+    # Derive service name from image (strip tag, then path, then common prefix)
+    _img_no_tag = split(_service_raw, ":")[0] || _service_raw
+    _img_parts = split(_img_no_tag, "/")
+    _img_base = _img_parts[-1] || _img_no_tag
+    _my_service = if is_string(_img_base) && _img_base != "" {
+        # Strip common Compose project prefixes like "services-"
+        _stripped = replace(_img_base, r'^services-', '')
+        _stripped
+    } else {
+        _my_service
+    }
 } else if exists(.SYSLOG_IDENTIFIER) || ._TRANSPORT == "kernel" {
     # --- journald source (system) ---
     _my_container = "host"
