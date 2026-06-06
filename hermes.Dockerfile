@@ -15,6 +15,3 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         docker-ce-cli \
         docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
-
-# Drop back to hermes user
-USER hermes
