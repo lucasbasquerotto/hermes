@@ -126,11 +126,9 @@ services:
       - PUID=0
       - PGID=0
       - TZ=Etc/UTC
-      - DEFAULT_WORKSPACE=/opt/hermes-repo
+      - DEFAULT_WORKSPACE=/opt
     volumes:
-      - /opt/data:/opt/data:ro
-      - /opt/hermes-repo:/opt/hermes-repo:ro
-      - /opt/workspace:/opt/workspace:ro
+      - /opt:/opt:ro
       - ./files/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
     ports:
       - 8443:8443
