@@ -19,10 +19,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - HERMES_DASHBOARD=1
-      - HERMES_DASHBOARD_HOST=127.0.0.1
+      - HERMES_DASHBOARD_HOST=0.0.0.0
+      - HERMES_DASHBOARD_INSECURE=1
       - HERMES_YOLO_MODE=1
     group_add:
       - "999"
+    networks:
+      - hermes-net
     logging: *journald
     deploy:
       resources:
@@ -37,8 +40,15 @@ services:
     container_name: hermes-toolbox
     restart: unless-stopped
     command: sleep infinity
+    networks:
+      - hermes-net
     logging: *journald
     volumes:
       - /var/data:/var/data:ro
       - /opt/hermes-repo:/opt/hermes-repo:rw
       - /opt/workspace:/opt/workspace:rw
+
+networks:
+  hermes-net:
+    driver: bridge
+    name: hermes-net
