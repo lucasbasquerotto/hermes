@@ -1,5 +1,5 @@
 # -*- mode: ruby -*-
-# vi: set ft=ruby :
+# vi: set ft=ruby :*
 
 Vagrant.configure("2") do |config|
   # ── Base Box ─────────────────────────────────────────────────────────
@@ -114,7 +114,7 @@ Vagrant.configure("2") do |config|
     # Create node_exporter user
     id -u node_exporter &>/dev/null || useradd -rs /bin/false node_exporter
 
-    # Systemd unit (disabled by default — enable after Prometheus is ready)
+    # Systemd unit
     cat > /etc/systemd/system/node_exporter.service << 'UNIT'
 [Unit]
 Description=Prometheus Node Exporter
@@ -124,9 +124,11 @@ After=network.target
 Type=simple
 User=node_exporter
 Group=node_exporter
-ExecStart=/usr/local/bin/node_exporter \\
-  --web.listen-address=:9100 \\
-  --path.rootfs=/
+ExecStart=/usr/local/bin/node_exporter \
+  --web.listen-address=:9100 \
+  --path.rootfs=/ \
+  --collector.systemd \
+  --collector.processes
 Restart=always
 
 [Install]
@@ -134,7 +136,7 @@ WantedBy=multi-user.target
 UNIT
 
     systemctl daemon-reload
-    echo "Node Exporter installed. Enable with: systemctl enable --now node_exporter"
+    systemctl enable --now node_exporter
   SHELL
 
   # ── Clone Repo + Run Startup ───────────────────────────────────────
