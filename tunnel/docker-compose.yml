@@ -1,7 +1,7 @@
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: cloudflared-tunnel
+    container_name: hermes-tunnel
     restart: unless-stopped
     env_file:
       - type: file
