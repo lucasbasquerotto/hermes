@@ -26,7 +26,9 @@ services:
           cpus: "2.0"
 
   toolbox:
-    image: ubuntu:22.04
+    build:
+      context: .
+      dockerfile: toolbox.Dockerfile
     container_name: hermes-toolbox
     restart: unless-stopped
     command: sleep infinity
