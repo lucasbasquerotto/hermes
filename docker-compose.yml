@@ -35,8 +35,6 @@ services:
     restart: unless-stopped
     command: sleep infinity
     logging: *journald
-    group_add:
-      - "999"
     volumes:
       - /var/data:/var/data:ro
       - /opt/hermes-repo:/opt/hermes-repo:rw
