@@ -8,9 +8,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         docker-compose \
     && rm -rf /var/lib/apt/lists/*
 
-# Create docker group with GID 999 (matching host) and add hermes user
-# so docker.sock access works through group_add in docker-compose.yml
-RUN groupadd -g 999 dockerhost && usermod -aG 999 hermes
+# Install sudo, create docker group GID 999 (matching host),
+# add hermes to root + docker groups, grant passwordless sudo
+RUN apt-get update && apt-get install -y --no-install-recommends sudo \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -g 999 dockerhost \
+    && usermod -aG 999,root hermes \
+    && echo "hermes ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/hermes \
+    && chmod 440 /etc/sudoers.d/hermes
 
 # When HERMES_ALLOW_ROOT_GATEWAY=1, skip s6-setuidgid so the gateway
 # runs as root and preserves supplementary groups (e.g. docker GID)
