@@ -21,7 +21,8 @@ services:
   vector:
     container_name: hermes-vector
     build:
-      dockerfile: vector/Dockerfile
+      context: vector
+      dockerfile: Dockerfile
       args:
         VECTOR_IMAGE: timberio/vector:0.55.0-debian
     restart: unless-stopped
@@ -41,13 +42,13 @@ services:
   loki:
     container_name: hermes-loki
     build:
-      dockerfile: loki/Dockerfile
+      context: loki
+      dockerfile: Dockerfile
       args:
         LOKI_IMAGE: grafana/loki:3.7.2
     restart: unless-stopped
     volumes:
       - loki-vol:/loki:rw
-      - /docker/vol/sync/loki:/docker/vol/sync/loki:rw
     networks:
       - lvg
     command: -config.file=/etc/loki/loki-config.yaml
@@ -57,7 +58,8 @@ services:
   grafana:
     container_name: hermes-grafana
     build:
-      dockerfile: grafana/Dockerfile
+      context: grafana
+      dockerfile: Dockerfile
       args:
         GRAFANA_IMAGE: grafana/grafana:13.0.1
     restart: unless-stopped
