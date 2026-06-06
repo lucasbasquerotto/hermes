@@ -227,7 +227,7 @@ type = "remap"
 inputs = ["vector_internal"]
 source = """
 # Map Vector's own internal logs to our standard schema
-.container = "vector"
+.container = "hermes-vector"
 .service = "vector"
 .stream = if .metadata.level == "error" || .metadata.level == "critical" || .metadata.level == "warn" {
     "stderr"
