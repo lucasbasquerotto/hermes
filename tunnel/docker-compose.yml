@@ -7,4 +7,4 @@ services:
       - type: file
         path: /opt/data/credentials/tunnel.env          
         required: true
-    command: tunnel run
+    command: tunnel --no-autoupdate run
