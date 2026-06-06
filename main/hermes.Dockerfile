@@ -11,5 +11,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # When HERMES_ALLOW_ROOT_GATEWAY=1, skip s6-setuidgid so the gateway
 # runs as root and preserves supplementary groups (e.g. docker GID)
 # from group_add. Replaces the original main-wrapper.sh.
-COPY main-wrapper.sh /opt/hermes/docker/main-wrapper.sh
+COPY main/main-wrapper.sh /opt/hermes/docker/main-wrapper.sh
 RUN chmod +x /opt/hermes/docker/main-wrapper.sh
