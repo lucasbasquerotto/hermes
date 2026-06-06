@@ -5,7 +5,7 @@ services:
   hermes:
     build:
       context: .
-      dockerfile: hermes.Dockerfile
+      dockerfile: main/hermes.Dockerfile
     container_name: hermes
     restart: unless-stopped
     command: gateway run
@@ -32,7 +32,7 @@ services:
   toolbox:
     build:
       context: .
-      dockerfile: toolbox.Dockerfile
+      dockerfile: main/toolbox.Dockerfile
     container_name: hermes-toolbox
     restart: unless-stopped
     command: sleep infinity
