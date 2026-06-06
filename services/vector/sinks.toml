@@ -1,12 +1,12 @@
 [sinks.console]
 # Send processed logs to Vector's stdout for debugging
 type = "console"
-inputs = ["remap_logs"]
+inputs = ["remap_logs", "vector_logs"]
 encoding.codec = "json"
 
 [sinks.loki]
 type = "loki"
-inputs = ["remap_logs"]
+inputs = ["remap_logs", "vector_logs"]
 endpoint = "http://loki:3100"
 encoding.codec = "json"
 encoding.message_key = "message"

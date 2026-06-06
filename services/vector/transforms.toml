@@ -221,3 +221,23 @@ del(.source_type)
 del(.version)
 del(.facility)
 """
+
+[transforms.vector_logs]
+type = "remap"
+inputs = ["vector_internal"]
+source = """
+# Map Vector's own internal logs to our standard schema
+.container = "vector"
+.service = "vector"
+.stream = if .metadata.level == "error" || .metadata.level == "critical" || .metadata.level == "warn" {
+    "stderr"
+} else {
+    "stdout"
+}
+.stream_path = if .metadata.level == "error" || .metadata.level == "critical" || .metadata.level == "warn" {
+    "error"
+} else {
+    "out"
+}
+.level = upcase(string!(.metadata.level))
+"""
