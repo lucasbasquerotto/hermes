@@ -18,6 +18,8 @@ services:
     environment:
       - HERMES_DASHBOARD=1
       - HERMES_DASHBOARD_HOST=127.0.0.1
+    group_add:
+      - "999"
     logging: *journald
     deploy:
       resources:
@@ -33,6 +35,8 @@ services:
     restart: unless-stopped
     command: sleep infinity
     logging: *journald
+    group_add:
+      - "999"
     volumes:
       - /var/data:/var/data:ro
       - /opt/hermes-repo:/opt/hermes-repo:rw
