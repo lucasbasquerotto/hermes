@@ -9,6 +9,8 @@ services:
       - "9119:9119"   # dashboard (only reached when HERMES_DASHBOARD=1)
     volumes:
       - /opt/data:/opt/data
+      - /opt/hermes-repo:/opt/hermes-repo:ro
+      - /opt/workspace:/opt/workspace:ro
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - HERMES_DASHBOARD=1
@@ -17,3 +19,13 @@ services:
         limits:
           memory: 4G
           cpus: "2.0"
+
+  toolbox:
+    image: ubuntu:22.04
+    container_name: hermes-toolbox
+    restart: unless-stopped
+    command: sleep infinity
+    volumes:
+      - /var/data:/var/data:ro
+      - /opt/hermes-repo:/opt/hermes-repo:rw
+      - /opt/workspace:/opt/workspace:rw

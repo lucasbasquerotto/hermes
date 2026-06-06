@@ -38,6 +38,28 @@ Vagrant.configure("2") do |config|
   config.ssh.forward_agent = false
   config.ssh.insert_key = true
 
+  # ── Fix Hermes Data Folder ──────────────────────────────────────────
+  config.vm.provision "shell", name: "fix-hermes-folder", privileged: true, inline: <<-SHELL
+    echo "Setting up /opt/data for the Hermes container..."
+
+    # 1. Create the hermes group with GID 10000 if it does not exist
+    if ! getent group hermes > /dev/null 2>&1; then
+      echo "Creating hermes group (GID 10000)..."
+      groupadd -g 10000 hermes
+    fi
+
+    # 2. Add the vagrant user to the hermes group
+    echo "Adding vagrant user to the hermes group..."
+    usermod -aG hermes vagrant
+
+    # 3. Create the data directory and fix ownership/permissions
+    mkdir -p /opt/data
+    chown -R 10000:10000 /opt/data
+    chmod -R 755 /opt/data
+
+    echo "Hermes environment setup completed successfully!"
+  SHELL
+
   # ── Install Docker Engine + Compose ─────────────────────────────────
   config.vm.provision "shell", name: "install-docker", privileged: true, inline: <<-SHELL
     set -euxo pipefail
