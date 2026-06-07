@@ -44,6 +44,16 @@ toolbox /tmp/data/scripts/my-script.sh
 
 The toolbox runs as **root** (UID 0). The hermes container runs as UID **10000**. After creating files via toolbox, they may need `chown` if the hermes container needs to read them from a shared volume.
 
+### ⚠️ The `patch` Tool Limitation
+
+The `patch` tool (Hermes built-in find-and-replace, `mode='replace'`) runs inside the **hermes container** — where `/opt/hermes-repo/` and `/opt/workspace/` are **read-only**. Using `patch` on files in those paths produces:
+
+```
+Read-only file system
+```
+
+This error has occurred repeatedly. **Always use `terminal()` → `toolbox`** (via bash heredoc or the `/tmp/data/scripts/` pattern) to edit files in the repo or workspace. The `patch` tool works correctly for files under `/opt/data/` — the only path that is read-write in the hermes container.
+
 ## /tmp/data/ — Inter-Container Bridge
 
 `/tmp/data/` is shared **read-write** between both the `hermes` and `toolbox` containers — the only path both can access. Use it as an intermediary for file transfer between containers.
