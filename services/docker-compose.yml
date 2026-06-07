@@ -57,7 +57,6 @@ services:
       - lvg
     command: -config.file=/etc/loki/loki-config.yaml
     user: root
-    entrypoint: /vault/config/entrypoint.sh
     mem_limit: 500M
     logging:
       driver: journald
@@ -113,7 +112,8 @@ services:
       - 'host:host-gateway'
     command:
     user: root
-    entrypoint: /vault/config/entrypoint.sh
+    entrypoint:
+      - '/bin/prometheus'
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.retention.time=7d'
       - '--storage.tsdb.path=/prometheus'
@@ -136,6 +136,7 @@ services:
       - DEFAULT_WORKSPACE=/opt
     volumes:
       - /opt:/opt:ro
+      - /tmp/data/credentials/:/tmp/data/credentials/:rw
       - ./files/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
     ports:
       - 8443:8443
