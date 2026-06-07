@@ -124,16 +124,24 @@ This is the main configuration file loaded by Hermes and the startup scripts. So
 | `TELEGRAM_BOT_TOKEN` | Before setup | Bot token from @BotFather. Required for Telegram connectivity. |
 | `TELEGRAM_ALLOWED_USERS` | Before setup | Comma-separated Telegram user IDs allowed to interact. |
 | `TELEGRAM_HOME_CHANNEL` | Before setup | Telegram channel/chat ID for default message delivery. |
-| `OPENCODE_GO_API_KEY` | Before setup | API key for the opencode-go provider (DeepSeek models). This is the only strictly required variable. |
+| `OPENCODE_GO_API_KEY` | Optional* | API key for the opencode-go provider (DeepSeek models). At least one provider must be configured. |
 | `GITHUB_APP_ID` | Before setup | GitHub App ID (numeric). Required for Hermes to authenticate with GitHub. |
 | `GITHUB_INSTALLATION_ID` | Before setup | GitHub App installation ID. Generated when installing the app in your org. |
-| `GOOGLE_API_KEY` | Before setup | Google API key for provider backends. |
+| `GOOGLE_API_KEY` | Optional* | Google API key for provider backends. At least one provider must be configured. |
 | `S3_BUCKET` | Before setup | S3 bucket name for backup (Backblaze B2, AWS S3, MinIO). |
 | `S3_ENDPOINT` | Before setup | S3 endpoint URL. |
 | `S3_REGION` | Before setup | S3 region. |
 | `S3_ACCESS_KEY` | Before setup | S3 access key ID. |
 | `S3_SECRET_KEY` | Before setup | S3 secret access key. |
 | `HERMES_DASHBOARD` | Before setup | Set to 1 to enable the web dashboard on port 9119. |
+
+\* **At least one provider must be active.** You can configure providers and models interactively after Hermes is running:
+
+```bash
+cd /opt/hermes-repo && docker compose exec hermes hermes model
+```
+
+This command lets you choose a provider and model, and enter the required API key directly. The keys in `.env` are an alternative way to provide credentials that are picked up automatically at startup.
 
 ### `opt-data-example/credentials/services.env`
 
