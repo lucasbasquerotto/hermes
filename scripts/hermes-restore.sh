@@ -7,7 +7,7 @@ HERMES_HOME="${HERMES_HOME:-/opt/data}"
 REPO_DIR="${REPO_DIR:-/opt/hermes-repo}"
 RCLONE="${RCLONE:-/opt/data/bin/rclone}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-LOG="$HERMES_HOME/cron/output/restore_${TIMESTAMP}.log"
+LOG="/tmp/hermes-restore-${TIMESTAMP}.log"
 
 mkdir -p "$HERMES_HOME/cron/output"
 
