@@ -25,19 +25,8 @@ if [ -z "${S3_ACCESS_KEY:-}" ] || [ -z "${S3_SECRET_KEY:-}" ] || \
 fi
 
 if ! command -v "$RCLONE" &>/dev/null && [ ! -f "$RCLONE" ]; then
-  echo "[$(date +'%Y-%m-%d %H:%M:%S')] rclone not found - downloading..." | tee -a "$LOG"
-  python3 -c "
-import urllib.request, zipfile, os, stat, shutil
-url = 'https://downloads.rclone.org/rclone-current-linux-amd64.zip'
-urllib.request.urlretrieve(url, '/tmp/rclone.zip')
-with zipfile.ZipFile('/tmp/rclone.zip', 'r') as zf:
-    for name in zf.namelist():
-        if name.endswith('/rclone'):
-            zf.extract(name, '/tmp')
-            shutil.copy2('/tmp/' + name, '${RCLONE}')
-            os.chmod('${RCLONE}', 0o755)
-            break
-" 2>&1 | tee -a "$LOG"
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] ERROR: rclone not found at $RCLONE. Install it in the container image (see hermes.Dockerfile)." | tee -a "$LOG"
+  exit 1
 fi
 
 S3_CONF="/tmp/rclone-hermes-restore.conf"

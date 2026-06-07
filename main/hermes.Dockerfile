@@ -28,3 +28,11 @@ RUN chmod +x /opt/hermes/docker/main-wrapper.sh
 # Install toolbox wrapper script
 COPY main/toolbox-wrapper.sh /usr/local/bin/toolbox
 RUN chmod +x /usr/local/bin/toolbox
+
+# Install rclone for backup/restore S3 syncs
+RUN curl -L https://downloads.rclone.org/rclone-current-linux-amd64.zip -o /tmp/rclone.zip \
+    && apt-get update && apt-get install -y --no-install-recommends unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && unzip -j /tmp/rclone.zip "*/rclone" -d /opt/data/bin/ \
+    && chmod +x /opt/data/bin/rclone \
+    && rm /tmp/rclone.zip
