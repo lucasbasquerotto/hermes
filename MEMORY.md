@@ -2,6 +2,8 @@
 
 This file documents operational patterns the agent must follow when working in this repo. Read this if a command fails, something unexpected happens, or you're unsure how to proceed.
 
+**Note for memory management:** The agent's main memory (MEMORY.md in /opt/data/memories/) has a **permanent first entry** directing to this file. That entry must never be removed during memory trimming or compaction — it is the primary fallback for operational guidance.
+
 ## Filesystem Mounts
 
 | Path | In hermes container | In toolbox container |
