@@ -12,6 +12,8 @@ networks:
     internal: true
 
 volumes:
+  vault-vol:
+    name: vault
   loki-vol:
     name: loki
   grafana-vol:
@@ -54,6 +56,8 @@ services:
     networks:
       - lvg
     command: -config.file=/etc/loki/loki-config.yaml
+    user: root
+    entrypoint: /vault/config/entrypoint.sh
     mem_limit: 500M
     logging:
       driver: journald
@@ -108,6 +112,8 @@ services:
     extra_hosts:
       - 'host:host-gateway'
     command:
+    user: root
+    entrypoint: /vault/config/entrypoint.sh
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.retention.time=7d'
       - '--storage.tsdb.path=/prometheus'
@@ -136,5 +142,25 @@ services:
     networks:
       - hermes-net
     mem_limit: 1G
+    logging:
+      driver: journald
+
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: hermes-vault
+    restart: unless-stopped
+    command: server -config=/vault/config/config.hcl
+    user: root
+    entrypoint: /vault/config/entrypoint.sh
+    volumes:
+      - vault-vol:/vault/data:rw
+      - ./vault/config.hcl:/vault/config/config.hcl:ro
+      - ./vault/entrypoint.sh:/vault/config/entrypoint.sh:ro
+    networks:
+      - hermes-net
+    cap_add:
+      - IPC_LOCK
+    mem_limit: 500M
     logging:
       driver: journald
