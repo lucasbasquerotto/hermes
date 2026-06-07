@@ -162,19 +162,24 @@ docker ps --format '{{.Names}}' | grep -v -E '^(hermes(-toolbox|-tunnel)?)$' | x
 ```
 
 ### `stats`
-Query the host node-exporter via `host.docker.internal:9100` and return CPU idle % and memory used/total:
+Query the host node-exporter via Docker gateway `172.17.0.1:9100` and return CPU idle % and memory used/total:
 ```bash
-# CPU idle %
-curl -s http://host.docker.internal:9100/metrics | grep '^node_cpu_seconds_total{mode="idle"}' | tail -1 | awk '{print "CPU Idle:", 100-((1-$2)*100), "%"}'
-
-# Memory
-curl -s http://host.docker.internal:9100/metrics | grep -E '^node_memory_Mem(Total|Available)_bytes' | awk '/MemTotal/{t=$2} /MemAvailable/{a=$2} END{printf "Memory: %.0f / %.0f GB (%.0f%%)\n", (t-a)/1e9, t/1e9, ((t-a)/t)*100}'
+curl -s http://172.17.0.1:9100/metrics | python3 -c "
+import sys, re
+data = sys.stdin.read()
+idle = sum(float(m) for m in re.findall(r'node_cpu_seconds_total\{[^}]*mode="idle"[^}]*\}\s+([\d.e+\-]+)', data))
+all_ = sum(float(m) for m in re.findall(r'node_cpu_seconds_total\{[^}]*\}\s+([\d.e+\-]+)', data))
+print(f'CPU Idle: {idle/all_*100:.1f}%' if all_ else 'CPU Idle: N/A')
+t = float(re.search(r'node_memory_MemTotal_bytes\s+([\d.e+\-]+)', data).group(1))
+a = float(re.search(r'node_memory_MemAvailable_bytes\s+([\d.e+\-]+)', data).group(1))
+print(f'Memory: {(t-a)/1e9:.0f} / {t/1e9:.0f} GB ({(t-a)/t*100:.0f}% used)')
+"
 ```
 
 Expected format:
 ```
-CPU Idle: 85%
-Memory: 28 / 62 GB (45%)
+CPU Idle: 83.0%
+Memory: 2 / 8 GB (23% used)
 ```
 
 ### `ps`
