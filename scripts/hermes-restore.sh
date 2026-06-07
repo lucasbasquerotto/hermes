@@ -59,9 +59,10 @@ $RCLONE --config "$S3_CONF" sync "hermes-s3:${S3_BUCKET}/data" "$HERMES_HOME" \
   --exclude ".skills_prompt_snapshot.json" \
   --exclude "models_dev_cache.json" \
   --exclude "ollama_cloud_models_cache.json" \
+  --exclude "state.db" \
   --exclude "state.db-wal" \
-  --exclude "lsp/**" \
   --exclude "state.db-shm" \
+  --exclude "lsp/**" \
   --log-level INFO 2>&1 | tee -a "$LOG"
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] S3 sync complete." | tee -a "$LOG"

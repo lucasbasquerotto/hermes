@@ -75,6 +75,7 @@ $RCLONE --config "$S3_CONF" sync "$HERMES_HOME" "hermes-s3:${S3_BUCKET}/data" \
   --exclude ".skills_prompt_snapshot.json" \
   --exclude "models_dev_cache.json" \
   --exclude "ollama_cloud_models_cache.json" \
+  --exclude "state.db" \
   --exclude "state.db-wal" \
   --exclude "state.db-shm" \
   --exclude "lsp/**" \
