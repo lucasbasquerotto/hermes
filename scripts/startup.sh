@@ -79,4 +79,7 @@ if [ -f "$HERMES_HOME/cron/jobs.json" ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Cron jobs found — the scheduler will pick them up automatically." | tee -a "$LOG"
 fi
 
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Fixing /opt/data ownership..."
+chown -R 10000:10000 "$HERMES_HOME"
+
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Hermes startup script — complete" | tee -a "$LOG"
