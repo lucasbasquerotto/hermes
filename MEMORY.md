@@ -265,6 +265,57 @@ Return 4 bare inline-code URLs (one-tap copyable on Telegram), no labels:
 ```
 
 The actual domain is resolved from `GF_SERVER_ROOT_URL` in `/opt/data/credentials/services.env`.
+
+### `logs` / `logs <service>`
+Tail the last 50 lines of a service container. Without arguments, shows the `hermes` container:
+
+```bash
+# Default: hermes container
+docker logs hermes --tail 50 --follow
+
+# Specific service: logs <service>
+docker logs hermes-<service> --tail 50
+```
+
+### `gitlog`
+Show the last 10 commits in the hermes-repo:
+
+```bash
+toolbox bash -c 'cd /opt/hermes-repo && git log --oneline -10'
+```
+
+### `backup`
+Trigger an ad-hoc backup immediately:
+
+```bash
+toolbox bash /opt/hermes-repo/scripts/hermes-backup.sh
+```
+
+### `restore`
+Restore data from S3:
+
+```bash
+toolbox bash /opt/hermes-repo/scripts/hermes-restore.sh
+```
+
+### `env`
+Show key configuration at a glance:
+
+```bash
+# Gathers from state.db, services.env, and .env
+echo "Provider: $(grep -m1 'provider:' /opt/hermes-repo/config.yaml 2>/dev/null || echo 'opencode-go')"
+echo "Model: $(sqlite3 /opt/data/state.db 'SELECT model FROM sessions ORDER BY started_at DESC LIMIT 1;' 2>/dev/null || echo 'deepseek-v4-flash')"
+grep GF_SERVER_ROOT_URL /opt/data/credentials/services.env
+df -h /opt/data | tail -1 | awk '{printf "Disk: %s / %s (%s)\n", $3, $2, $5}'
+```
+
+Expected format:
+```
+Provider: opencode-go
+Model: deepseek-v4-flash
+GF_SERVER_ROOT_URL=https://hermes-grafana.mydomain.com
+Disk: 34G / 62G (58%)
+```
 ## When in Doubt
 
 1. Check this file for operational guidance.
