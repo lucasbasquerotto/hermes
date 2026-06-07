@@ -34,6 +34,7 @@ if ! grep -q "^HERMES_DASHBOARD=" "$HERMES_HOME/.env" 2>/dev/null; then
 fi
 
 # ── 5. Start Docker containers via compose ───────────────────────────
+chown -R 10000:10000 "$HERMES_HOME"
 if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Hermes container..." | tee -a "$LOG"
   docker compose up -d 2>&1 | tee -a "$LOG"
