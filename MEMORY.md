@@ -258,10 +258,10 @@ vector
 Return the following service URLs (domain inferred from `GF_SERVER_ROOT_URL` in `/opt/data/credentials/services.env`):
 
 ```
-Hermes Dashboard: https://hermes-dashboard.lucasbasquerotto.com
-Grafana: https://hermes-grafana.lucasbasquerotto.com
-Vault: https://hermes-vault.lucasbasquerotto.com
-Code Server: https://hermes-files.lucasbasquerotto.com
+Hermes Dashboard: https://hermes-dashboard.mydomain.com
+Grafana: https://hermes-grafana.mydomain.com
+Vault: https://hermes-vault.mydomain.com
+Code Server: https://hermes-files.mydomain.com
 ```
 ## When in Doubt
 
