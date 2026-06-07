@@ -162,9 +162,9 @@ docker ps --format '{{.Names}}' | grep -v -E '^(hermes(-toolbox|-tunnel)?)$' | x
 ```
 
 ### `stats`
-Query the host node-exporter via Docker gateway `172.17.0.1:9100` and return CPU idle % and memory used/total:
+Query the host node-exporter via `host.docker.internal:9100` (resolves via `extra_hosts` in toolbox) and return CPU idle % and memory used/total:
 ```bash
-curl -s http://172.17.0.1:9100/metrics | python3 -c "
+toolbox curl -s http://host.docker.internal:9100/metrics | python3 -c "
 import sys, re
 data = sys.stdin.read()
 idle = sum(float(m) for m in re.findall(r'node_cpu_seconds_total\{[^}]*mode="idle"[^}]*\}\s+([\d.e+\-]+)', data))
