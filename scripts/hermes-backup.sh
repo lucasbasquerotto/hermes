@@ -33,6 +33,7 @@ if docker inspect hermes-vault &>/dev/null; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Stopping vault for consistent data backup..." >> "$LOG"
   docker stop hermes-vault >> "$LOG" 2>&1
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Copying vault data..." >> "$LOG"
+  rm -rf "$HERMES_HOME/backup/vault/" && mkdir -p "$HERMES_HOME/backup/vault/"
   docker cp hermes-vault:/vault/data/. "$HERMES_HOME/backup/vault/" >> "$LOG" 2>&1
   chown -R 10000:10000 "$HERMES_HOME/backup/vault/" >> "$LOG" 2>&1
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Starting vault..." >> "$LOG"
