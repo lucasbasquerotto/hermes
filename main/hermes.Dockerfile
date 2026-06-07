@@ -2,10 +2,11 @@ FROM nousresearch/hermes-agent:v2026.5.29.2
 
 USER root
 
-# Install Docker CLI and Compose from Debian repos
+# Install Docker CLI, Compose, and sqlite3 from Debian repos
 RUN apt-get update && apt-get install -y --no-install-recommends \
         docker.io \
         docker-compose \
+        sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install sudo, create docker group GID 999 (matching host),
