@@ -115,7 +115,10 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ]; then
   if [ -f "$HERMES_HOME/backup/grafana/grafana.db" ]; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Grafana db backup found — restoring..." | tee -a "$LOG"
     docker stop hermes-grafana 2>&1 | tee -a "$LOG"
-    docker cp "$HERMES_HOME/backup/grafana/grafana.db" hermes-grafana:/var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
+    docker run --rm \
+      -v grafana:/var/lib/grafana:rw \
+      -v "$HERMES_HOME/backup/grafana:/backup:ro" \
+      alpine sh -c "cp /backup/grafana.db /var/lib/grafana/grafana.db && chown 472:0 /var/lib/grafana/grafana.db" 2>&1 | tee -a "$LOG"
     docker start hermes-grafana 2>&1 | tee -a "$LOG"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Grafana db restore done." | tee -a "$LOG"
   else
