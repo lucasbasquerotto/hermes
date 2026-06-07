@@ -23,3 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends sudo \
 # from group_add. Replaces the original main-wrapper.sh.
 COPY main/main-wrapper.sh /opt/hermes/docker/main-wrapper.sh
 RUN chmod +x /opt/hermes/docker/main-wrapper.sh
+
+# Install toolbox wrapper script
+COPY main/toolbox-wrapper.sh /usr/local/bin/toolbox
+RUN chmod +x /usr/local/bin/toolbox
