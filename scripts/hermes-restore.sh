@@ -79,6 +79,8 @@ if [ -f "$HERMES_HOME/backup/grafana/grafana.db" ]; then
   docker stop hermes-grafana >> "$LOG" 2>&1 || true
   docker cp "$HERMES_HOME/backup/grafana/grafana.db" hermes-grafana:/var/lib/grafana/grafana.db >> "$LOG" 2>&1
   docker start hermes-grafana >> "$LOG" 2>&1
+  docker exec hermes-grafana chown 472:0 /var/lib/grafana/grafana.db >> "$LOG" 2>&1 || true
+  docker exec hermes-grafana chmod 640 /var/lib/grafana/grafana.db >> "$LOG" 2>&1 || true
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Grafana database restored." | tee -a "$LOG"
 fi
 

@@ -65,6 +65,8 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ]; then
     docker start hermes-grafana 2>&1 | tee -a "$LOG"
     cd "$REPO_DIR/services"
     docker compose exec -T grafana cp /tmp/data/grafana/grafana.db /var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
+    docker compose exec -T grafana chown 472:0 /var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
+    docker compose exec -T grafana chmod 640 /var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
     cd "$REPO_DIR"
     docker restart hermes-grafana 2>&1 | tee -a "$LOG"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Grafana db restore done." | tee -a "$LOG"
