@@ -53,3 +53,5 @@ services:
       - /opt/hermes-repo:/opt/hermes-repo:rw
       - /opt/workspace:/opt/workspace:rw
       - /tmp/data/grafana:/tmp/data/grafana:rw
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
