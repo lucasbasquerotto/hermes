@@ -255,14 +255,16 @@ vector
 </details>
 
 ### `links`
-Return the following service URLs (domain inferred from `GF_SERVER_ROOT_URL` in `/opt/data/credentials/services.env`):
+Return 4 bare inline-code URLs (one-tap copyable on Telegram), no labels:
 
 ```
-Hermes Dashboard: https://hermes-dashboard.mydomain.com
-Grafana: https://hermes-grafana.mydomain.com
-Vault: https://hermes-vault.mydomain.com
-Code Server: https://hermes-files.mydomain.com
+`https://hermes-dashboard.mydomain.com`
+`https://hermes-grafana.mydomain.com`
+`https://hermes-vault.mydomain.com`
+`https://hermes-files.mydomain.com`
 ```
+
+The actual domain is resolved from `GF_SERVER_ROOT_URL` in `/opt/data/credentials/services.env`.
 ## When in Doubt
 
 1. Check this file for operational guidance.
