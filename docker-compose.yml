@@ -19,6 +19,7 @@ services:
       - "9119:9119"   # dashboard (only reached when HERMES_DASHBOARD=1)
     volumes:
       - /opt/data:/opt/data
+      - /tmp/data:/tmp/data:rw
       - /opt/hermes-repo:/opt/hermes-repo:ro
       - /opt/workspace:/opt/workspace:ro
       - /var/run/docker.sock:/var/run/docker.sock
@@ -50,6 +51,7 @@ services:
     logging: *journald
     volumes:
       - /var/data:/var/data:ro
+      - /tmp/data:/tmp/data:rw
       - /opt/hermes-repo:/opt/hermes-repo:rw
       - /opt/workspace:/opt/workspace:rw
       - /tmp/data/grafana:/tmp/data/grafana:rw
