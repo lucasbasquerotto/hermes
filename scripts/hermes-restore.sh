@@ -54,10 +54,12 @@ EOF
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Downloading data from S3 (bucket: ${S3_BUCKET})..." | tee -a "$LOG"
 
 $RCLONE --config "$S3_CONF" sync "hermes-s3:${S3_BUCKET}/data" "$HERMES_HOME" \
+  --delete-excluded \
   --exclude ".cache/**" \
   --exclude "cache/**" \
   --exclude ".npm/**" \
   --exclude "home/.npm/**" \
+  --exclude ".npm/_npx/**" \
   --exclude "audio_cache/**" \
   --exclude "image_cache/**" \
   --exclude "logs/**" \
@@ -69,6 +71,7 @@ $RCLONE --config "$S3_CONF" sync "hermes-s3:${S3_BUCKET}/data" "$HERMES_HOME" \
   --exclude "models_dev_cache.json" \
   --exclude "ollama_cloud_models_cache.json" \
   --exclude "state.db-wal" \
+  --exclude "lsp/**" \
   --exclude "state.db-shm" \
   --log-level INFO 2>&1 | tee -a "$LOG"
 
