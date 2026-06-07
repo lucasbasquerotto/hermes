@@ -1,0 +1,85 @@
+#!/bin/bash
+# Hermes Agent backup script - S3-compatible (Backblaze, AWS, Minio, etc.)
+# Single source of truth: lives in /opt/hermes-repo/scripts/hermes-backup.sh
+set -euo pipefail
+
+HERMES_HOME="${HERMES_HOME:-/opt/data}"
+REPO_DIR="${REPO_DIR:-/opt/hermes-repo}"
+RCLONE="${RCLONE:-/opt/data/bin/rclone}"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+LOG="$HERMES_HOME/cron/output/backup_${TIMESTAMP}.log"
+
+mkdir -p "$HERMES_HOME/cron/output" "$HERMES_HOME/backup/grafana" "$HERMES_HOME/backup/vault"
+
+if [ -f "$HERMES_HOME/state.db" ]; then
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Creating consistent sqlite3 backup of state.db..." >> "$LOG"
+  sqlite3 "$HERMES_HOME/state.db" ".backup '${HERMES_HOME}/backup/state.db'" >> "$LOG" 2>&1
+else
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] state.db not found - skipping sqlite backup." >> "$LOG"
+fi
+
+if docker inspect hermes-grafana &>/dev/null; then
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Stopping grafana for consistent db backup..." >> "$LOG"
+  docker stop hermes-grafana >> "$LOG" 2>&1
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Copying grafana.db..." >> "$LOG"
+  docker cp hermes-grafana:/var/lib/grafana/grafana.db "$HERMES_HOME/backup/grafana/grafana.db"
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Starting grafana..." >> "$LOG"
+  docker start hermes-grafana >> "$LOG" 2>&1
+else
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] hermes-grafana container not found - skipping." >> "$LOG"
+fi
+
+if docker inspect hermes-vault &>/dev/null; then
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Stopping vault for consistent data backup..." >> "$LOG"
+  docker stop hermes-vault >> "$LOG" 2>&1
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Copying vault data..." >> "$LOG"
+  docker cp hermes-vault:/vault/data/. "$HERMES_HOME/backup/vault/" >> "$LOG" 2>&1
+  chown -R 10000:10000 "$HERMES_HOME/backup/vault/" >> "$LOG" 2>&1
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Starting vault..." >> "$LOG"
+  docker start hermes-vault >> "$LOG" 2>&1
+else
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] hermes-vault container not found - skipping." >> "$LOG"
+fi
+
+set -a
+source "$HERMES_HOME/.env"
+set +a
+
+S3_CONF="/tmp/rclone-hermes-backup.conf"
+cat > "$S3_CONF" << EOF
+[hermes-s3]
+type = s3
+provider = Other
+access_key_id = ${S3_ACCESS_KEY}
+secret_access_key = ${S3_SECRET_KEY}
+endpoint = ${S3_ENDPOINT}
+region = ${S3_REGION}
+EOF
+
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] Starting Hermes backup to S3 (bucket: ${S3_BUCKET})..." >> "$LOG"
+
+$RCLONE --config "$S3_CONF" sync "$HERMES_HOME" "hermes-s3:${S3_BUCKET}/data" \
+  --delete-excluded --fast-list \
+  --exclude ".cache/**" \
+  --exclude "cache/**" \
+  --exclude ".npm/**" \
+  --exclude "home/.npm/**" \
+  --exclude ".npm/_npx/**" \
+  --exclude "audio_cache/**" \
+  --exclude "image_cache/**" \
+  --exclude "logs/**" \
+  --exclude "cron/output/**" \
+  --exclude "sandboxes/**" \
+  --exclude "sessions/**" \
+  --exclude ".local/share/tirith/**" \
+  --exclude ".skills_prompt_snapshot.json" \
+  --exclude "models_dev_cache.json" \
+  --exclude "ollama_cloud_models_cache.json" \
+  --exclude "state.db-wal" \
+  --exclude "state.db-shm" \
+  --exclude "lsp/**" \
+  --log-level INFO >> "$LOG" 2>&1
+
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] Backup complete!" >> "$LOG"
+echo "Backup complete. Log: $LOG"
+rm -f "$S3_CONF"
