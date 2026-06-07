@@ -74,5 +74,21 @@ if [ -f "$HERMES_HOME/backup/state.db" ]; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] state.db restored." | tee -a "$LOG"
 fi
 
+if [ -f "$HERMES_HOME/backup/grafana/grafana.db" ]; then
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Restoring grafana database..." | tee -a "$LOG"
+  docker stop hermes-grafana >> "$LOG" 2>&1 || true
+  docker cp "$HERMES_HOME/backup/grafana/grafana.db" hermes-grafana:/var/lib/grafana/grafana.db >> "$LOG" 2>&1
+  docker start hermes-grafana >> "$LOG" 2>&1
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Grafana database restored." | tee -a "$LOG"
+fi
+
+if [ -d "$HERMES_HOME/backup/vault" ] && [ "$(ls -A $HERMES_HOME/backup/vault 2>/dev/null)" ]; then
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Restoring vault data..." | tee -a "$LOG"
+  docker stop hermes-vault >> "$LOG" 2>&1 || true
+  docker cp "$HERMES_HOME/backup/vault/." hermes-vault:/vault/data/ >> "$LOG" 2>&1
+  docker start hermes-vault >> "$LOG" 2>&1
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Vault data restored." | tee -a "$LOG"
+fi
+
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Restore complete!" | tee -a "$LOG"
 rm -f "$S3_CONF"
