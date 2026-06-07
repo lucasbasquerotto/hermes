@@ -8,54 +8,85 @@ This file documents operational patterns the agent must follow when working in t
 |------|-------------------|-------------------|
 | `/opt/hermes-repo/` | **ro** (read-only) | **rw** (read-write) |
 | `/opt/data/` | **rw** | **ro** |
-| `/tmp/data/` | **rw** (after `chown 10000:10000`) | **rw** |
+| `/tmp/data/` | **rw** | **rw** |
+| `/opt/workspace/` | **ro** (read-only) | **rw** (read-write) |
 
-**Rule:** Always use `docker exec hermes-toolbox` for any file writes, git operations, or directory changes under `/opt/hermes-repo/`.
+**Rule:** Always use `toolbox` (wrapper for `docker compose exec toolbox`) for any file writes, git operations, or directory changes under `/opt/hermes-repo/` or `/opt/workspace/`. Run directly (without toolbox) for writes under `/opt/data/`.
 
-## Creating / Editing Files in the Repo
+## Creating / Editing Files in the Repo or Workspace
 
-1. Write to a temp path or use heredoc on the host, then:
-   ```
-   docker cp /opt/data/myfile hermes-toolbox:/opt/hermes-repo/path/to/target
-   ```
-   Or pipe directly:
-   ```
-   docker exec hermes-toolbox bash -c 'cat > /opt/hermes-repo/path/to/file' << 'EOF'
-   content
-   EOF
-   ```
+Use `toolbox <command>` for any file operations under `/opt/hermes-repo/` or `/opt/workspace/`. Examples:
 
-2. The toolbox runs as **root** (UID 0). The hermes container runs as UID **10000**. After creating files via toolbox, they may need `chown` if the hermes container needs to read them from a shared volume.
+```bash
+# Write a file
+toolbox bash -c 'cat > /opt/hermes-repo/path/to/file' << 'EOF'
+content
+EOF
 
-## /tmp/data/ Shared Volume
+# Quick inline write
+toolbox bash -c 'echo "content" > /opt/hermes-repo/path/to/file'
 
-`/tmp/data/` is a root-owned directory shared between hermes and toolbox containers. To make it writable by the hermes user:
-
-```
-docker exec hermes-toolbox chown 10000:10000 /tmp/data/
+# Copy files
+toolbox cp /opt/data/source /opt/hermes-repo/path/to/dest
 ```
 
-Use this for passing files between containers (e.g., creating a script in toolbox, reading result in hermes).
+For **complex scripts** that would be fragile in an inline heredoc (quoting, escaping, interpolation issues), use the `/tmp/data/scripts/` pattern:
+
+```bash
+# 1. Write the script to /tmp/data/scripts/ (hermes has /opt/data/ access)
+# 2. Make it executable
+toolbox chmod +x /tmp/data/scripts/my-script.sh
+# 3. Run it — toolbox has rw access to repo & workspace
+toolbox /tmp/data/scripts/my-script.sh
+```
+
+The toolbox runs as **root** (UID 0). The hermes container runs as UID **10000**. After creating files via toolbox, they may need `chown` if the hermes container needs to read them from a shared volume.
+
+## /tmp/data/ — Inter-Container Bridge
+
+`/tmp/data/` is shared **read-write** between both the `hermes` and `toolbox` containers — the only path both can access. Use it as an intermediary for file transfer between containers.
+
+**Permission notes:**
+- Toolbox runs as **root** (UID 0), hermes runs as **10000**
+- Files written by toolbox (root) in `/tmp/data/` are unwritable by hermes (uid 10000)
+- Files written by hermes (10000) in `/tmp/data/` are unwritable by toolbox (root)
+
+**Fixing permissions:**
+```bash
+toolbox chown -R 10000:10000 /tmp/data/
+```
+
+**Smart script pattern** (avoids heredoc quoting issues):
+```bash
+# 1. Write script to /tmp/data/scripts/ (hermes container can write here)
+toolbox bash -c 'mkdir -p /tmp/data/scripts'
+# 2. Make executable and run
+toolbox chmod +x /tmp/data/scripts/my-script.sh
+toolbox /tmp/data/scripts/my-script.sh
+```
+
+This pattern is ideal for complex, multi-step, or long commands where inline bash heredocs become fragile with quoting, escaping, and variable interpolation issues.
 
 ## Git Operations
 
 The repo is at `github.com/nexuslbs/hermes`.
 
 **Commit workflow:**
-```
-docker exec hermes-toolbox bash -c '
+```bash
+toolbox bash -c '
   cd /opt/hermes-repo && \
   git add <files> && \
   git commit -m "message"'
 ```
 
-**Push workflow** (requires GitHub App token):
-```
+**Push workflow** (requires GitHub App token — pipe via stdin to avoid env issues):
+```bash
 source /opt/data/credentials/auto/gh-auth.sh
-docker exec -e GITHUB_TOKEN=*** hermes-toolbox bash -c '
+echo "$GITHUB_TOKEN" | toolbox bash -c '
+  read TOKEN
   cd /opt/hermes-repo && \
   ORIGIN_URL=$(git remote get-url origin) && \
-  git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/nexuslbs/hermes.git" && \
+  git remote set-url origin "https://x-access-token:${TOKEN}@github.com/nexuslbs/hermes.git" && \
   git push origin main && \
   git remote set-url origin "$ORIGIN_URL"'
 ```
