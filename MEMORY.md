@@ -139,16 +139,125 @@ Both scripts share the same exclude list (`.cache/`, `.npm/`, `lsp/`, `logs/`, `
 
 ## External Repos
 
-- Fork under `nexuslbs` org first before making any changes
-- Never write/PR directly to original upstream repos
-- Exception: `nexuslbs/*` repos and B2 bucket are safe — no approval needed
-
 ## Container Management
 
 - **Start:** `docker compose up -d` in `/opt/hermes-repo/services/`
 - **Stop (shorthand):** stop all containers **except** `hermes`, `hermes-toolbox`, `hermes-tunnel`
 - Hermes services: `hermes-loki`, `hermes-prometheus`, `hermes-grafana`, `hermes-vector`, `hermes-vault`, `hermes-files`, `hermes-cadvisor`
 
+
+## Fast Actions — Quick Command Reference
+
+These are shorthand commands the agent uses when the user says these keywords:
+
+### `start`
+```bash
+cd /opt/hermes-repo/services && docker compose up -d
+```
+
+### `stop`
+Stop all containers **except** `hermes`, `hermes-toolbox`, `hermes-tunnel`:
+```bash
+docker ps --format '{{.Names}}' | grep -v -E '^(hermes(-toolbox|-tunnel)?)$' | xargs -r docker stop
+```
+
+### `stats`
+Query the host node-exporter via `host.docker.internal:9100` and return CPU idle % and memory used/total:
+```bash
+# CPU idle %
+curl -s http://host.docker.internal:9100/metrics | grep '^node_cpu_seconds_total{mode="idle"}' | tail -1 | awk '{print "CPU Idle:", 100-((1-$2)*100), "%"}'
+
+# Memory
+curl -s http://host.docker.internal:9100/metrics | grep -E '^node_memory_Mem(Total|Available)_bytes' | awk '/MemTotal/{t=$2} /MemAvailable/{a=$2} END{printf "Memory: %.0f / %.0f GB (%.0f%%)\n", (t-a)/1e9, t/1e9, ((t-a)/t)*100}'
+```
+
+Expected format:
+```
+CPU Idle: 85%
+Memory: 28 / 62 GB (45%)
+```
+
+### `ps`
+Show a detailed formatted overview using the template below.
+
+<details>
+<summary>📊 ps template</summary>
+
+```
+📊 Current Stats
+
+Sessions
+Active (Telegram DM)
+• ID: ...
+• Started: 15:56 UTC
+• Messages: ongoing
+• Tokens: last prompt: 45K
+
+Archived (ghost)
+• ID: ...
+• Started: 04:09 UTC
+• Messages: 0
+• Tokens: 23K in / 1.5K out
+
+Active Session Details
+- Display: ...
+- Last prompt tokens: 45,215
+- Estimated cost: ~$0.000006
+- Last updated: 20:40 UTC
+
+State DB
+- sessions: 1 archived (0 msgs)
+- messages: 0
+- integrity: ✅ ok
+
+Memory
+- agent memories: 7 entries (~2.1 KB)
+- user profile: 5 entries (~1.4 KB)
+
+Skills
+- total: 96 SKILL.md files across 24 categories
+
+Backup (just ran)
+- S3 bucket (B2): 1,917 objects — 173 MiB
+- Snapshot state.db: 144 KB
+- Last backup log: 37.5s, 3 files transferred, 100%
+
+Disk
+- Used: 34 GB / 62 GB (58%)
+
+Services (all healthy)
+cadvisor
+• Status: ✅ Up (healthy)
+
+files
+• Status: ✅ Up
+
+grafana
+• Status: ✅ Up
+
+loki
+• Status: ✅ Up
+
+prometheus
+• Status: ✅ Up
+
+vault
+• Status: ✅ Up
+
+vector
+• Status: ✅ Up
+```
+</details>
+
+### `links`
+Return the following service URLs (domain inferred from `GF_SERVER_ROOT_URL` in `/opt/data/credentials/services.env`):
+
+```
+Hermes Dashboard: https://hermes-dashboard.lucasbasquerotto.com
+Grafana: https://hermes-grafana.lucasbasquerotto.com
+Vault: https://hermes-vault.lucasbasquerotto.com
+Code Server: https://hermes-files.lucasbasquerotto.com
+```
 ## When in Doubt
 
 1. Check this file for operational guidance.
