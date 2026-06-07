@@ -54,6 +54,7 @@ services:
       - /tmp/data:/tmp/data:rw
       - /opt/hermes-repo:/opt/hermes-repo:rw
       - /opt/workspace:/opt/workspace:rw
+      - /opt/data:/opt/data:ro
       - /tmp/data/grafana:/tmp/data/grafana:rw
       - /tmp/data/credentials/:/tmp/data/credentials/:rw
     extra_hosts:

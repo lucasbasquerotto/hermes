@@ -7,7 +7,7 @@ This file documents operational patterns the agent must follow when working in t
 | Path | In hermes container | In toolbox container |
 |------|-------------------|-------------------|
 | `/opt/hermes-repo/` | **ro** (read-only) | **rw** (read-write) |
-| `/opt/data/` | **rw** | Not mounted |
+| `/opt/data/` | **rw** | **ro** |
 | `/tmp/data/` | **rw** (after `chown 10000:10000`) | **rw** |
 
 **Rule:** Always use `docker exec hermes-toolbox` for any file writes, git operations, or directory changes under `/opt/hermes-repo/`.
