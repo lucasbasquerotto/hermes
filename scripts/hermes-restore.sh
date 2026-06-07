@@ -85,7 +85,7 @@ fi
 if [ -d "$HERMES_HOME/backup/vault" ] && [ "$(ls -A $HERMES_HOME/backup/vault 2>/dev/null)" ]; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Restoring vault data..." | tee -a "$LOG"
   docker stop hermes-vault >> "$LOG" 2>&1 || true
-  docker run --rm --volumes-from hermes-vault alpine ash -c "rm -rf /vault/data/*"
+  docker run --rm --volumes-from hermes-vault hermes-repo-toolbox bash -c "rm -rf /vault/data/*"
   docker cp "$HERMES_HOME/backup/vault/." hermes-vault:/vault/data/ >> "$LOG" 2>&1
   docker start hermes-vault >> "$LOG" 2>&1
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Vault data restored." | tee -a "$LOG"
