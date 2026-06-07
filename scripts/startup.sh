@@ -25,6 +25,9 @@ fi
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Running restore from S3 backup..." | tee -a "$LOG"
 bash "$REPO_DIR/scripts/hermes-restore.sh" 2>&1 | tee -a "$LOG" || true
 
+# Restore may delete cron/output/ (rclone --delete-excluded removes excluded dirs)
+mkdir -p "$HERMES_HOME/cron/output"
+
 # ── 4. Ensure HERMES_DASHBOARD=1 is set ─────────────────────────────
 if ! grep -q "^HERMES_DASHBOARD=" "$HERMES_HOME/.env" 2>/dev/null; then
   echo "HERMES_DASHBOARD=1" >> "$HERMES_HOME/.env"

@@ -30,10 +30,6 @@ Vagrant.configure("2") do |config|
     override.vm.network "private_network", type: "dhcp"
   end
 
-  # Expose gateway & dashboard ports to host
-  config.vm.network "forwarded_port", guest: 8642, host: 8642, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 9119, host: 9119, host_ip: "127.0.0.1"
-
   # ── SSH ─────────────────────────────────────────────────────────────
   config.ssh.forward_agent = false
   config.ssh.insert_key = true
@@ -92,6 +88,13 @@ Vagrant.configure("2") do |config|
     # Verify installation
     docker --version
     docker compose version
+  SHELL
+
+  # ── Disable Buildx Default Attestations ────────────────────────────────────────────
+  config.vm.provision "shell", name: "disable-buildx-attestations", privileged: true, inline: <<-SHELL
+    # Prevent buildx from adding provenance/sbom attestations by default
+    # (avoids multi-platform errors and speeds up builds)
+    echo "export BUILDX_NO_DEFAULT_ATTESTATIONS=1" >> /home/vagrant/.bashrc
   SHELL
 
   # ── Install Node Exporter (host metrics for Prometheus) ──────────────
