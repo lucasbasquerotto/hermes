@@ -285,17 +285,17 @@ toolbox bash -c 'cd /opt/hermes-repo && git log --oneline -10'
 ```
 
 ### `backup`
-Trigger an ad-hoc backup immediately:
+Trigger an ad-hoc backup immediately (run directly, not via toolbox — `/opt/data/` is read-only there):
 
 ```bash
-toolbox bash /opt/hermes-repo/scripts/hermes-backup.sh
+bash /opt/hermes-repo/scripts/hermes-backup.sh
 ```
 
 ### `restore`
-Restore data from S3:
+Restore data from S3 (run directly, not via toolbox — `/opt/data/` is read-only there):
 
 ```bash
-toolbox bash /opt/hermes-repo/scripts/hermes-restore.sh
+bash /opt/hermes-repo/scripts/hermes-restore.sh
 ```
 
 ### `env`
