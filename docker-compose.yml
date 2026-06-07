@@ -1,11 +1,6 @@
 x-logging: &journald
   driver: journald
 
-volumes:
-  grafana:
-    external: true
-    name: grafana
-
 networks:
   hermes-net:
     driver: bridge
@@ -57,5 +52,4 @@ services:
       - /var/data:/var/data:ro
       - /opt/hermes-repo:/opt/hermes-repo:rw
       - /opt/workspace:/opt/workspace:rw
-      - /tmp/data:/tmp/data:rw
-      - grafana:/var/lib/grafana:rw
+      - /tmp/data/grafana:/tmp/data/grafana:rw

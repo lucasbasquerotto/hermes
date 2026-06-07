@@ -71,6 +71,7 @@ services:
     volumes:
       - grafana-vol:/var/lib/grafana:rw
       - /opt/data/backup/grafana:/opt/data/backup/grafana:rw
+      - /tmp/data/grafana:/tmp/data/grafana:rw
     networks:
       - hermes-net
       - lvg
