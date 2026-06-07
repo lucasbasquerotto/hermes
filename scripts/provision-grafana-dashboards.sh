@@ -42,6 +42,7 @@ PAYLOAD
     -X POST \
     -d "$payload" \
     "$GRAFANA_URL/api/dashboards/import"
+  )
 
   if [ "$code" = "200" ]; then
     echo "  ✓ Dashboard '$name' imported"
