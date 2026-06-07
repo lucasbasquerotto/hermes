@@ -35,14 +35,14 @@ fi
 
 # ── 5. Start Docker containers via compose ───────────────────────────
 chown -R 10000:10000 "$HERMES_HOME"
-if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ]; then
+if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ] && cd "$REPO_DIR"; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Hermes container..." | tee -a "$LOG"
   docker compose up -d 2>&1 | tee -a "$LOG"
 
   # Also start monitoring services (Grafana, Prometheus, cAdvisor, Loki)
-  if [ -d "$REPO_DIR/services" ]; then
+  if [ -f "$REPO_DIR/services/docker-compose.yml" ]; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting monitoring services..." | tee -a "$LOG"
-    docker compose up -d 2>&1 | tee -a "$LOG"
+    cd "$REPO_DIR/services" && docker compose up -d 2>&1 | tee -a "$LOG"
   fi
 
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Waiting for Hermes to start..." | tee -a "$LOG"
