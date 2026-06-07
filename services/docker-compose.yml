@@ -146,7 +146,6 @@ services:
     logging:
       driver: journald
 
-
   vault:
     image: hashicorp/vault:latest
     container_name: hermes-vault
