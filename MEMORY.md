@@ -159,7 +159,7 @@ toolbox docker restart hermes
 ### `build`
 Rebuild and start the hermes container:
 ```bash
-toolbox bash -c 'cd /opt/hermes-repo/services && docker compose up -d --build hermes'
+toolbox bash -c 'docker compose up -d --build hermes'
 ```
 ### `stats`
 Query the host node-exporter via `host.docker.internal:9100` (resolves via `extra_hosts` in toolbox) and return CPU idle % and memory used/total:
