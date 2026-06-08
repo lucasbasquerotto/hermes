@@ -9,7 +9,7 @@ RCLONE="${RCLONE:-/opt/data/bin/rclone}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG="$HERMES_HOME/cron/output/backup_${TIMESTAMP}.log"
 
-mkdir -p "$HERMES_HOME/cron/output" "$HERMES_HOME/backup/grafana" "$HERMES_HOME/backup/vault"
+mkdir -p "$HERMES_HOME/cron/output" "$HERMES_HOME/backup/grafana" "$HERMES_HOME/backup/vault" "$HERMES_HOME/backup/hindsight"
 
 if [ -f "$HERMES_HOME/state.db" ]; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Creating consistent sqlite3 backup of state.db..." >> "$LOG"
@@ -40,6 +40,24 @@ if docker inspect hermes-vault &>/dev/null; then
   docker start hermes-vault >> "$LOG" 2>&1
 else
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] hermes-vault container not found - skipping." >> "$LOG"
+fi
+
+# Hindsight backup — pg_dump via unix socket, no stop required (consistent snapshot)
+if docker inspect hermes-hindsight &>/dev/null; then
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Backing up hindsight database (pg_dump via unix socket)..." >> "$LOG"
+
+  docker exec hermes-hindsight bash -c '
+    PASS=$(python3 -c "import json; print(json.load(open(\"/home/hindsight/.pg0/instances/hindsight/instance.json\"))[\"password\"])")
+    export PGPASSWORD="$PASS"
+    export LD_LIBRARY_PATH=/home/hindsight/.pg0/installation/18.1.0/lib
+    exec /home/hindsight/.pg0/installation/18.1.0/bin/pg_dump \
+      -h /tmp -p 5432 -U hindsight -d hindsight \
+      --no-owner --no-acl --clean --if-exists
+  ' > "$HERMES_HOME/backup/hindsight/dump.sql" 2>> "$LOG"
+
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Hindsight database dumped to backup/hindsight/dump.sql" >> "$LOG"
+else
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] hermes-hindsight container not found - skipping hindsight backup." >> "$LOG"
 fi
 
 set -a
