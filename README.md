@@ -156,7 +156,6 @@ Grafana-specific environment variables for the monitoring stack.
 |----------|------------|-------------|
 | `GF_SERVER_DOMAIN` | Before setup | Public domain for Grafana (e.g. hermes-grafana.mydomain.com). |
 | `GF_SERVER_ROOT_URL` | Before setup | Full URL for Grafana (e.g. https://hermes-grafana.mydomain.com). |
-| `HINDSIGHT_API_LLM_API_KEY` | Before setup | API key for Hindsight LLM embeddings. Also stored here if the key is reused from Grafana env. |
 
 ### `opt-data-example/credentials/vault.env`
 
