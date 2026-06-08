@@ -93,54 +93,46 @@ if [ -d "$HERMES_HOME/backup/vault" ] && [ "$(ls -A $HERMES_HOME/backup/vault 2>
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Vault data restored." | tee -a "$LOG"
 fi
 
-# Hindsight restore — stop container, start PG from bundled binaries, restore via psql, restart
+# Hindsight restore — stop, run PG from bundled binaries, restore dump from stdin, restart
 if [ -f "$HERMES_HOME/backup/hindsight/dump.sql" ]; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Restoring hindsight database..." | tee -a "$LOG"
 
   docker stop hermes-hindsight >> "$LOG" 2>&1 || true
 
-  TMP_CONTAINER="hermes-hindsight-restore"
-
-  # Start a temporary container with the hindsight data volume
-  docker rm -f "$TMP_CONTAINER" >> "$LOG" 2>&1 || true
-  docker run --rm -d --name "$TMP_CONTAINER" \
-    -v hindsight:/home/hindsight/.pg0 \
+  # Pipe the dump into a temp container that starts PG, runs psql from stdin, and stops PG
+  docker run --rm -i -v hindsight:/home/hindsight/.pg0 \
     --entrypoint bash \
     ghcr.io/vectorize-io/hindsight:latest \
-    -c 'sleep 9999' >> "$LOG" 2>&1
+    -c '
+exec python3 -c "
+import json, os, subprocess, sys
+info = json.load(open(\"/home/hindsight/.pg0/instances/hindsight/instance.json\"))
+os.environ[\"LD_LIBRARY_PATH\"] = \"/home/hindsight/.pg0/installation/18.1.0/lib\"
+os.environ[\"PGPASSWORD\"] = info[\"password\"]
 
-  # Copy the dump file in
-  docker cp "$HERMES_HOME/backup/hindsight/dump.sql" "$TMP_CONTAINER:/tmp/dump.sql" >> "$LOG" 2>&1
+PGDATA = \"/home/hindsight/.pg0/instances/hindsight/data\"
+PGBIN = \"/home/hindsight/.pg0/installation/18.1.0/bin\"
 
-  # Start embedded PG, restore, stop PG
-  docker exec "$TMP_CONTAINER" bash -c '
-    PASS=$(python3 -c "import json; print(json.load(open(\"/home/hindsight/.pg0/instances/hindsight/instance.json\"))[\"password\"])")
-    export PGPASSWORD=***    export LD_LIBRARY_PATH=/home/hindsight/.pg0/installation/18.1.0/lib
+print(\"Starting PostgreSQL...\", flush=True)
+subprocess.run([PGBIN + \"/pg_ctl\", \"-D\", PGDATA, \"-l\", \"/tmp/pg.log\", \"start\"], check=True)
 
-    PGDATA=/home/hindsight/.pg0/instances/hindsight/data
-    PGBIN=/home/hindsight/.pg0/installation/18.1.0/bin
+subprocess.run([PGBIN + \"/pg_isready\", \"-h\", \"/tmp\", \"-q\"], check=True)
 
-    echo "Starting PostgreSQL..."
-    "$PGBIN/pg_ctl" -D "$PGDATA" -l /tmp/pg.log start
-    sleep 2
+print(\"Restoring from stdin...\", flush=True)
+psql = subprocess.Popen([PGBIN + \"/psql\", \"-h\", \"/tmp\", \"-U\", \"hindsight\", \"-d\", \"hindsight\"], stdin=sys.stdin)
+psql.wait()
+if psql.returncode != 0:
+    raise SystemExit(psql.returncode)
 
-    if ! "$PGBIN/pg_isready" -h /tmp -q 2>/dev/null; then
-      echo "ERROR: PostgreSQL failed to start."
-      cat /tmp/pg.log
-      exit 1
-    fi
+print(\"Stopping PostgreSQL...\", flush=True)
+subprocess.run([PGBIN + \"/pg_ctl\", \"-D\", PGDATA, \"stop\"], check=True)
+"
+' < "$HERMES_HOME/backup/hindsight/dump.sql" >> "$LOG" 2>&1
 
-    echo "Restoring from dump..."
-    "$PGBIN/psql" -h /tmp -U hindsight -d hindsight -f /tmp/dump.sql
-
-    echo "Stopping PostgreSQL..."
-    "$PGBIN/pg_ctl" -D "$PGDATA" stop
-  ' >> "$LOG" 2>&1
-
-  docker rm -f "$TMP_CONTAINER" >> "$LOG" 2>&1
-
-  # Remove the dump so it is not re-applied on next restore
   rm -f "$HERMES_HOME/backup/hindsight/dump.sql"
+
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] Starting hindsight..." | tee -a "$LOG"
+  docker start hermes-hindsight >> "$LOG" 2>&1
 
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Hindsight database restored." | tee -a "$LOG"
 else

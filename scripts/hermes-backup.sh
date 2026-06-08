@@ -41,19 +41,22 @@ if docker inspect hermes-vault &>/dev/null; then
 else
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] hermes-vault container not found - skipping." >> "$LOG"
 fi
-
-# Hindsight backup — pg_dump via unix socket, no stop required (consistent snapshot)
+# Hindsight backup — pg_dump via unix socket, no stop required
 if docker inspect hermes-hindsight &>/dev/null; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Backing up hindsight database (pg_dump via unix socket)..." >> "$LOG"
+  mkdir -p "$HERMES_HOME/backup/hindsight"
 
-  docker exec hermes-hindsight bash -c '
-    PASS=$(python3 -c "import json; print(json.load(open(\"/home/hindsight/.pg0/instances/hindsight/instance.json\"))[\"password\"])")
-    export PGPASSWORD="$PASS"
-    export LD_LIBRARY_PATH=/home/hindsight/.pg0/installation/18.1.0/lib
-    exec /home/hindsight/.pg0/installation/18.1.0/bin/pg_dump \
-      -h /tmp -p 5432 -U hindsight -d hindsight \
-      --no-owner --no-acl --clean --if-exists
-  ' > "$HERMES_HOME/backup/hindsight/dump.sql" 2>> "$LOG"
+  docker exec hermes-hindsight python3 -c "
+import json, os, subprocess
+info = json.load(open('/home/hindsight/.pg0/instances/hindsight/instance.json'))
+os.environ['LD_LIBRARY_PATH'] = '/home/hindsight/.pg0/installation/18.1.0/lib'
+os.environ['PGPASSWORD'] = info['password']
+subprocess.run([
+    '/home/hindsight/.pg0/installation/18.1.0/bin/pg_dump',
+    '-h', '/tmp', '-p', '5432', '-U', 'hindsight', '-d', 'hindsight',
+    '--no-owner', '--no-acl', '--clean', '--if-exists'
+])
+" > "$HERMES_HOME/backup/hindsight/dump.sql" 2>> "$LOG"
 
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Hindsight database dumped to backup/hindsight/dump.sql" >> "$LOG"
 else
