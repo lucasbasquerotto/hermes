@@ -374,6 +374,6 @@ Disk: 34G / 62G (58%)
 
 1. Check this file for operational guidance.
 2. Check `user-conventions` skill for user preferences.
-3. Check relevant skill for the task domain.
+3. Load relevant skill for the task domain (`skill_view`).
 4. If genuinely stuck, ask the user — but try the above first.
 
