@@ -15,6 +15,14 @@ This file documents operational patterns the agent must follow when working in t
 
 **Rule:** Always use `toolbox` (wrapper for `docker compose exec toolbox`) for any file writes, git operations, or directory changes under `/opt/hermes-repo/` or `/opt/workspace/`. Run directly (without toolbox) for writes under `/opt/data/`.
 
+
+## /opt/data/ Ownership
+
+Everything under `/opt/data/` must be owned by the hermes user (UID 10000).
+If something is root-owned, fix with:
+```bash
+docker run --rm -v /opt/data:/opt/data alpine chown -R 10000:10000 /opt/data/<path>
+```
 ## Creating / Editing Files in the Repo or Workspace
 
 Use `toolbox <command>` for any file operations under `/opt/hermes-repo/` or `/opt/workspace/`. Examples:
