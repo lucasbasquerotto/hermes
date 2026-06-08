@@ -1,8 +1,3 @@
-x-logging:
-  logging: &logging
-    options:
-      max-size: 50m
-
 networks:
   hermes-net:
     external: true
@@ -10,16 +5,17 @@ networks:
   lvg:
     driver: bridge
     internal: true
+    name: hermes-lvg
 
 volumes:
-  vault-vol:
-    name: vault
-  loki-vol:
-    name: loki
-  grafana-vol:
-    name: grafana
-  prometheus-vol:
-    name: prometheus
+  hermes-vault-vol:
+    name: hermes-vault
+  hermes-loki-vol:
+    name: hermes-loki
+  hermes-grafana-vol:
+    name: hermes-grafana
+  hermes-prometheus-vol:
+    name: hermes-prometheus
 
 services:
   vector:
@@ -41,7 +37,8 @@ services:
     depends_on:
       - loki
     mem_limit: 500M
-    logging: *logging
+    logging:
+      driver: journald
 
   loki:
     container_name: hermes-loki
@@ -52,7 +49,7 @@ services:
         LOKI_IMAGE: grafana/loki:3.7.2
     restart: unless-stopped
     volumes:
-      - loki-vol:/loki:rw
+      - hermes-loki-vol:/loki:rw
     networks:
       - lvg
     command: -config.file=/etc/loki/loki-config.yaml
@@ -72,14 +69,14 @@ services:
     env_file:
       - /opt/data/credentials/services.env
     volumes:
-      - grafana-vol:/var/lib/grafana:rw
+      - hermes-grafana-vol:/var/lib/grafana:rw
       - /opt/data/backup/grafana:/opt/data/backup/grafana:rw
       - /tmp/data/grafana:/tmp/data/grafana:rw
     networks:
       - hermes-net
       - lvg
     ports:
-      - 3000:3000
+      - "3000"
     depends_on:
       - loki
     mem_limit: 500M
@@ -118,7 +115,7 @@ services:
       - '--storage.tsdb.retention.time=7d'
       - '--storage.tsdb.path=/prometheus'
     volumes:
-      - prometheus-vol:/prometheus:rw
+      - hermes-prometheus-vol:/prometheus:rw
     networks:
       - hermes-net
     mem_limit: 500M
@@ -139,7 +136,7 @@ services:
       - /tmp/data/credentials/:/tmp/data/credentials/:rw
       - ./files/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
     ports:
-      - 8443:8443
+      - "8443"
     networks:
       - hermes-net
     mem_limit: 1G
@@ -154,7 +151,7 @@ services:
     user: root
     entrypoint: /vault/config/entrypoint.sh
     volumes:
-      - vault-vol:/vault/data:rw
+      - hermes-vault-vol:/vault/data:rw
       - ./vault/config.hcl:/vault/config/config.hcl:ro
       - ./vault/entrypoint.sh:/vault/config/entrypoint.sh:ro
     networks:

@@ -1,6 +1,3 @@
-x-logging: &journald
-  driver: journald
-
 networks:
   hermes-net:
     external: true
@@ -16,4 +13,7 @@ services:
     command: tunnel --no-autoupdate run
     networks:
       - hermes-net
-    logging: *journald
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: journald

@@ -78,8 +78,8 @@ if [ -f "$HERMES_HOME/backup/grafana/grafana.db" ]; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Restoring grafana database..." | tee -a "$LOG"
   docker stop hermes-grafana >> "$LOG" 2>&1 || true
   docker cp "$HERMES_HOME/backup/grafana/grafana.db" hermes-grafana:/var/lib/grafana/grafana.db >> "$LOG" 2>&1
-  docker run --rm -v grafana:/var/lib/grafana alpine chown 472:0 /var/lib/grafana/grafana.db >> "$LOG" 2>&1 || true
-  docker run --rm -v grafana:/var/lib/grafana alpine chmod 640 /var/lib/grafana/grafana.db >> "$LOG" 2>&1 || true
+  docker run --rm -v hermes-grafana:/var/lib/grafana alpine chown 472:0 /var/lib/grafana/grafana.db >> "$LOG" 2>&1 || true
+  docker run --rm -v hermes-grafana:/var/lib/grafana alpine chmod 640 /var/lib/grafana/grafana.db >> "$LOG" 2>&1 || true
   docker start hermes-grafana >> "$LOG" 2>&1
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Grafana database restored." | tee -a "$LOG"
 fi
@@ -100,7 +100,7 @@ if [ -f "$HERMES_HOME/backup/hindsight/dump.sql" ]; then
   docker stop hermes-hindsight >> "$LOG" 2>&1 || true
 
   # Pipe the dump into a temp container that starts PG, runs psql from stdin, and stops PG
-  docker run --rm -i -v hindsight:/home/hindsight/.pg0 \
+  docker run --rm -i -v hermes-hindsight:/home/hindsight/.pg0 \
     --entrypoint bash \
     ghcr.io/vectorize-io/hindsight:latest \
     -c '

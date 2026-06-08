@@ -60,8 +60,8 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ] && cd 
     docker stop hermes-grafana 2>&1 | tee -a "$LOG"
     docker cp "$HERMES_HOME/backup/grafana/grafana.db" hermes-grafana:/var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
     # Fix ownership on the volume before grafana starts (docker cp preserves source UID 10000)
-    docker run --rm -v grafana:/var/lib/grafana alpine chown 472:0 /var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
-    docker run --rm -v grafana:/var/lib/grafana alpine chmod 640 /var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
+    docker run --rm -v hermes-grafana:/var/lib/grafana alpine chown 472:0 /var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
+    docker run --rm -v hermes-grafana:/var/lib/grafana alpine chmod 640 /var/lib/grafana/grafana.db 2>&1 | tee -a "$LOG"
     docker start hermes-grafana 2>&1 | tee -a "$LOG"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Grafana db restore done." | tee -a "$LOG"
   fi
