@@ -6,6 +6,10 @@ networks:
     driver: bridge
     name: hermes-net
 
+volumes:
+  hindsight-data:
+    name: hindsight
+
 services:
   hermes:
     build:
@@ -59,3 +63,24 @@ services:
       - /tmp/data/credentials/:/tmp/data/credentials/:rw
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  hindsight:
+    image: ghcr.io/vectorize-io/hindsight:latest
+    container_name: hermes-hindsight
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+      - "9999:9999"
+    environment:
+      - HINDSIGHT_API_LLM_PROVIDER=opencode-go
+      - HINDSIGHT_API_LLM_API_KEY=***
+      - HINDSIGHT_API_LLM_MODEL=deepseek-v4-flash
+      - HINDSIGHT_API_LLM_BASE_URL=https://opencode.ai/zen/go/v1
+    env_file:
+      - /opt/data/.env
+    volumes:
+      - hindsight-data:/home/hindsight/.pg0
+    networks:
+      - hermes-net
+    mem_limit: 1G
+    logging: *journald

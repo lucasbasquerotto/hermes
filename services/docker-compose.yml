@@ -143,8 +143,7 @@ services:
     networks:
       - hermes-net
     mem_limit: 1G
-    logging:
-      driver: journald
+    logging: *logging
 
   vault:
     image: hashicorp/vault:latest
