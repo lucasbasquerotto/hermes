@@ -90,11 +90,10 @@ This pattern is ideal for complex, multi-step, or long commands where inline bas
 ## Git Operations
 The repo is at `github.com/nexuslbs/hermes`.
 
-**Commit & push (one-shot):**
+**Commit & push:**
 ```bash
-/opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py
+/opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py "fix: describe what changed"
 ```
-This checks for changes, stages, commits with an auto-generated message, and pushes. Uses the GH App token internally — never captured through terminal output, so no masking issues.
 **Git identity:**
 - `user.name = Hermes Agent`
 - `user.email = hermes@nexuslbs.io`
@@ -275,9 +274,9 @@ toolbox bash -c 'cd /opt/hermes-repo && git log --oneline -10'
 ```
 
 ### `commit`
-Check for uncommitted changes in the repo, stage, commit with an auto-generated message, and push to origin. Uses the GH App token internally — no token capture issues:
+Stage all changes, commit with a descriptive message, and push:
 ```bash
-/opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py
+/opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py "fix: describe what changed"
 ```
 
 
