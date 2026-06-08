@@ -134,6 +134,11 @@ This is the main configuration file loaded by Hermes and the startup scripts. So
 | `S3_ACCESS_KEY` | Before setup | S3 access key ID. |
 | `S3_SECRET_KEY` | Before setup | S3 secret access key. |
 | `HERMES_DASHBOARD` | Before setup | Set to 1 to enable the web dashboard on port 9119. |
+| `HINDSIGHT_API_URL` | Before setup | URL for the local Hindsight memory service. Default: http://hermes-hindsight:8888. |
+| `HINDSIGHT_API_LLM_PROVIDER` | Before setup | LLM provider for Hindsight embeddings (e.g. gemini, openai). |
+| `HINDSIGHT_API_LLM_MODEL` | Before setup | Model name for Hindsight embeddings (e.g. gemini-2.5-flash). |
+| `HINDSIGHT_API_LLM_BASE_URL` | Optional | Custom base URL for the Hindsight LLM provider. Leave empty for default. |
+| `HINDSIGHT_API_LLM_API_KEY` | Before setup | API key for the Hindsight LLM provider. |
 
 \* **At least one provider must be active.** You can configure providers and models interactively after Hermes is running:
 
@@ -151,6 +156,7 @@ Grafana-specific environment variables for the monitoring stack.
 |----------|------------|-------------|
 | `GF_SERVER_DOMAIN` | Before setup | Public domain for Grafana (e.g. hermes-grafana.mydomain.com). |
 | `GF_SERVER_ROOT_URL` | Before setup | Full URL for Grafana (e.g. https://hermes-grafana.mydomain.com). |
+| `HINDSIGHT_API_LLM_API_KEY` | Before setup | API key for Hindsight LLM embeddings. Also stored here if the key is reused from Grafana env. |
 
 ### `opt-data-example/credentials/vault.env`
 
@@ -180,14 +186,14 @@ The Cloudflare Tunnel service is **optional**. It is not required if your instan
 
 If you do not need either scenario, leave this file empty or skip the tunnel container.
 
-### `opt-data-example/credentials/my-github-app.2026-06-04.private-key.pem`
+### `opt-data-example/credentials/nexuslbs-app.2026-06-04.private-key.pem`
 
 GitHub App private key (PEM file). Required for Hermes to authenticate as a GitHub App and manage repositories.
 
 **Important:**
 - The GitHub App **must be organization-scoped/restricted** to your GitHub organization (not user-wide). This ensures the app can only access repos within your org.
 - Generate from: **GitHub Settings - Developer Settings - GitHub Apps - your app - Generate a private key**.
-- The filename includes the date it was generated (e.g. `my-github-app.2026-06-04.private-key.pem`).
+- The filename includes the date it was generated (e.g. `nexuslbs-app.2026-06-04.private-key.pem`).
 - The example file is intentionally empty - place the actual PEM in `/opt/data/credentials/`.
 - **Never commit the actual PEM file** to the repository.
 
