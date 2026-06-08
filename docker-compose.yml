@@ -71,11 +71,6 @@ services:
     ports:
       - "8888:8888"
       - "9999:9999"
-    environment:
-      - HINDSIGHT_API_LLM_PROVIDER=opencode-go
-      - HINDSIGHT_API_LLM_API_KEY=${HINDSIGHT_API_LLM_API_KEY}
-      - HINDSIGHT_API_LLM_MODEL=deepseek-v4-flash
-      - HINDSIGHT_API_LLM_BASE_URL=https://opencode.ai/zen/go/v1
     env_file:
       - /opt/data/.env
     volumes:
