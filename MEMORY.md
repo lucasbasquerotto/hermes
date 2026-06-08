@@ -80,35 +80,16 @@ toolbox /tmp/data/scripts/my-script.sh
 This pattern is ideal for complex, multi-step, or long commands where inline bash heredocs become fragile with quoting, escaping, and variable interpolation issues.
 
 ## Git Operations
-
 The repo is at `github.com/nexuslbs/hermes`.
-
-**Commit workflow:**
+**Commit & push (one-shot):**
 ```bash
-toolbox bash -c '
-  cd /opt/hermes-repo && \
-  git add <files> && \
-  git commit -m "message"'
+/opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py
 ```
-
-**Push workflow** (requires GitHub App token — pipe via stdin to avoid env issues):
-```bash
-source /opt/data/credentials/auto/gh-auth.sh
-echo "$GITHUB_TOKEN" | toolbox bash -c '
-  read TOKEN
-  cd /opt/hermes-repo && \
-  ORIGIN_URL=$(git remote get-url origin) && \
-  git remote set-url origin "https://x-access-token:${TOKEN}@github.com/nexuslbs/hermes.git" && \
-  git push origin main && \
-  git remote set-url origin "$ORIGIN_URL"'
-```
-
+This checks for changes, stages, commits with an auto-generated message, and pushes. Uses the GH App token internally — never captured through terminal output, so no masking issues.
 **Git identity:**
 - `user.name = Hermes Agent`
 - `user.email = hermes@nexuslbs.io`
-
 Set per-repo via `git config user.name/user.email`. There is NO global git config. NEVER use `hermes@nousresearch.com` — that email is verified under a different GitHub user and causes incorrect attribution.
-
 ## Gitignore Convention
 
 The root `.gitignore` must be minimal. Avoid redundant entries — e.g., `/tmp/` already covers everything under `/tmp/`, so `/tmp/data/restore/` is unnecessary.
@@ -284,6 +265,13 @@ Show the last 10 commits in the hermes-repo:
 toolbox bash -c 'cd /opt/hermes-repo && git log --oneline -10'
 ```
 
+### `commit`
+Check for uncommitted changes in the repo, stage, commit with an auto-generated message, and push to origin. Uses the GH App token internally — no token capture issues:
+```bash
+/opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py
+```
+
+
 ### `backup`
 Trigger an ad-hoc backup immediately (run directly, not via toolbox — `/opt/data/` is read-only there):
 
@@ -353,6 +341,8 @@ Sessions: 1
 Total tokens: 23,336 in / 1,499 out
 ```
 
+
+
 ### `env`
 Show key configuration at a glance:
 
@@ -377,3 +367,4 @@ Disk: 34G / 62G (58%)
 2. Check `user-conventions` skill for user preferences.
 3. Check relevant skill for the task domain.
 4. If genuinely stuck, ask the user — but try the above first.
+
