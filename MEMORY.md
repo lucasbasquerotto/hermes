@@ -150,6 +150,17 @@ Stop all containers **except** `hermes`, `hermes-toolbox`, `hermes-tunnel`, `her
 docker ps --format '{{.Names}}' | grep -v -E '^(hermes(-toolbox|-tunnel|-hindsight)?)$' | xargs -r docker stop
 ```
 
+### `restart`
+Restart the hermes container (runs from toolbox — outside, avoids self-destruction):
+```bash
+toolbox docker restart hermes
+```
+
+### `build`
+Rebuild and start the hermes container:
+```bash
+toolbox bash -c 'cd /opt/hermes-repo/services && docker compose up -d --build hermes'
+```
 ### `stats`
 Query the host node-exporter via `host.docker.internal:9100` (resolves via `extra_hosts` in toolbox) and return CPU idle % and memory used/total:
 ```bash
@@ -274,7 +285,8 @@ toolbox bash -c 'cd /opt/hermes-repo && git log --oneline -10'
 ```
 
 ### `commit`
-Stage all changes, commit with a descriptive message, and push:
+Say "commit" and I'll check the changes, write a descriptive message, and push.
+Manual one-shot:
 ```bash
 /opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py "fix: describe what changed"
 ```
@@ -376,3 +388,18 @@ Disk: 34G / 62G (58%)
 3. Load relevant skill for the task domain (`skill_view`).
 4. If genuinely stuck, ask the user — but try the above first.
 
+
+### Container Restarts (Cross-Container Pattern)
+
+Never restart your own container directly — it kills the agent mid-session, causing gateway shutdowns. Always restart from **outside** the target container:
+
+- **Restart hermes** (runs from toolbox container — outside):
+  ```bash
+  toolbox docker restart hermes
+  ```
+- **Restart toolbox** (runs directly — hermes is outside toolbox):
+  ```bash
+  docker restart hermes-toolbox
+  ```
+
+The toolbox container is a separate process, so `toolbox docker restart hermes` kills the hermes container cleanly from the outside. No self-destruction.

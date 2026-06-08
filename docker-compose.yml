@@ -60,11 +60,12 @@ services:
       - /opt/data:/opt/data:ro
       - /tmp/data/grafana:/tmp/data/grafana:rw
       - /tmp/data/credentials/:/tmp/data/credentials/:rw
+      - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   hindsight:
-    image: ghcr.io/vectorize-io/hindsight:latest
+    image: ghcr.io/vectorize-io/hindsight:0.7.2
     container_name: hermes-hindsight
     restart: unless-stopped
     expose:

@@ -5,7 +5,7 @@ networks:
 
 services:
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.5.2
     container_name: hermes-tunnel
     restart: unless-stopped
     env_file:

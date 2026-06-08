@@ -84,7 +84,7 @@ services:
       driver: journald
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: ghcr.io/google/cadvisor:v0.57.0
     container_name: hermes-cadvisor
     restart: unless-stopped
     privileged: true
@@ -144,7 +144,7 @@ services:
       driver: journald
 
   vault:
-    image: hashicorp/vault:latest
+    image: hashicorp/vault:2.0.2
     container_name: hermes-vault
     restart: unless-stopped
     command: server -config=/vault/config/config.hcl
