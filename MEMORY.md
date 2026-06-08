@@ -89,6 +89,7 @@ This pattern is ideal for complex, multi-step, or long commands where inline bas
 
 ## Git Operations
 The repo is at `github.com/nexuslbs/hermes`.
+
 **Commit & push (one-shot):**
 ```bash
 /opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py
