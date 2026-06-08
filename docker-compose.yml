@@ -15,9 +15,9 @@ services:
     container_name: hermes
     restart: unless-stopped
     command: gateway run
-    ports:
+    expose:
       - "8642"    # gateway API
-      - "9119"    # dashboard (only reached when HERMES_DASHBOARD=1)
+      - "9119"    # dashboard
     volumes:
       - /opt/data:/opt/data
       - /tmp/data:/tmp/data:rw
@@ -67,7 +67,7 @@ services:
     image: ghcr.io/vectorize-io/hindsight:latest
     container_name: hermes-hindsight
     restart: unless-stopped
-    ports:
+    expose:
       - "8888"
       - "9999"
     env_file:

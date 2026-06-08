@@ -75,7 +75,7 @@ services:
     networks:
       - hermes-net
       - lvg
-    ports:
+    expose:
       - "3000"
     depends_on:
       - loki
@@ -135,7 +135,7 @@ services:
       - /opt:/opt:ro
       - /tmp/data/credentials/:/tmp/data/credentials/:rw
       - ./files/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
-    ports:
+    expose:
       - "8443"
     networks:
       - hermes-net
