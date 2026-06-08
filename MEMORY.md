@@ -302,41 +302,42 @@ bash /opt/hermes-repo/scripts/hermes-restore.sh
 Show current session details and token usage:
 
 ```bash
-python3 -c "
+python3 << 'PYEOF'
 import json, datetime, sqlite3
 from pathlib import Path
 
-# Current session
 sfile = Path('/opt/data/sessions/sessions.json')
 if sfile.exists():
     with open(sfile) as f:
         data = json.load(f)
     s = list(data.values())[0]
     created = datetime.datetime.fromisoformat(s['created_at'])
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
     delta = now - created
     hours = delta.total_seconds() / 3600
-    
+
     print('📊 Current Session')
-    print(f'ID: {s["session_id"]}')
-    print(f'Created: {s["created_at"][:19]} UTC ({hours:.1f}h ago)')
-    print(f'Platform: {s["origin"]["platform"]} ({s["origin"]["chat_type"]})')
-    print(f'Display: {s["display_name"]}')
-    print(f'Context: {s.get("last_prompt_tokens", "?")} / 1,000,000')
+    print(f"ID: {s['session_id']}")
+    print(f"Created: {s['created_at'][:19]} UTC ({hours:.1f}h ago)")
+    print(f"Platform: {s['origin']['platform']} ({s['origin']['chat_type']})")
+    ctx = s.get('last_prompt_tokens', '?')
+    if isinstance(ctx, int):
+        print(f"Context: {ctx:,} / 1,000,000")
+    else:
+        print(f"Context: {ctx} / 1,000,000")
     print()
 
-# Archived sessions from state.db
 db = '/opt/data/state.db'
 if Path(db).exists():
     conn = sqlite3.connect(db)
     c = conn.cursor()
     c.execute('SELECT COUNT(*), COALESCE(SUM(input_tokens),0), COALESCE(SUM(output_tokens),0) FROM sessions')
     count, inp, out = c.fetchone()
-    print(f'📦 Archived Sessions')
-    print(f'Sessions: {count}')
-    print(f'Total tokens: {inp:,} in / {out:,} out')
+    print(f"📦 Archived Sessions")
+    print(f"Sessions: {count}")
+    print(f"Total tokens: {inp:,} in / {out:,} out")
     conn.close()
-"
+PYEOF
 ```
 
 Expected format:
@@ -345,7 +346,6 @@ Expected format:
 ID: 20260607_155613_8521135c
 Created: 2026-06-07 15:56:13 UTC (8.0h ago)
 Platform: telegram (dm)
-Display: Lucas Basquerotto
 Context: 134,467 / 1,000,000
 
 📦 Archived Sessions
