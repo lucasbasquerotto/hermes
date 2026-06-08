@@ -142,7 +142,7 @@ Both scripts share the same exclude list (`.cache/`, `.npm/`, `lsp/`, `logs/`, `
 ## Container Management
 
 - **Start:** `docker compose up -d` in `/opt/hermes-repo/services/`
-- **Stop (shorthand):** stop all containers **except** `hermes`, `hermes-toolbox`, `hermes-tunnel`
+- **Stop (shorthand):** stop all containers **except** `hermes`, `hermes-toolbox`, `hermes-tunnel`, `hermes-hindsight`
 - Hermes services: `hermes-loki`, `hermes-prometheus`, `hermes-grafana`, `hermes-vector`, `hermes-vault`, `hermes-files`, `hermes-cadvisor`
 
 
@@ -156,9 +156,9 @@ cd /opt/hermes-repo/services && docker compose up -d
 ```
 
 ### `stop`
-Stop all containers **except** `hermes`, `hermes-toolbox`, `hermes-tunnel`:
+Stop all containers **except** `hermes`, `hermes-toolbox`, `hermes-tunnel`, `hermes-hindsight`:
 ```bash
-docker ps --format '{{.Names}}' | grep -v -E '^(hermes(-toolbox|-tunnel)?)$' | xargs -r docker stop
+docker ps --format '{{.Names}}' | grep -v -E '^(hermes(-toolbox|-tunnel|-hindsight)?)$' | xargs -r docker stop
 ```
 
 ### `stats`
