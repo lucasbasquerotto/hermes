@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git make gcc build-essential ca-certificates openssh-client gnupg \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Python packages for login automation (TOTP code generation, API calls)
+RUN pip3 install pyotp requests
+
 # Install Docker CLI and Docker Compose plugin
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
