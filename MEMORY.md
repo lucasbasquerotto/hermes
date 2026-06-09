@@ -98,14 +98,36 @@ toolbox /tmp/data/scripts/my-script.sh
 This pattern is ideal for complex, multi-step, or long commands where inline bash heredocs become fragile with quoting, escaping, and interpolation issues.
 
 ## Git Operations
-The repo is at `github.com/nexuslbs/hermes`.
 
-**Commit & push:**
+The repos are at:
+- `github.com/nexuslbs/hermes` → `/opt/hermes-repo/`
+- `github.com/nexuslbs/hermes-workspace` → `/opt/workspace/`
+
+### Remote URL
+
+`origin` remote uses the clean HTTPS URL (no embedded auth — avoids wasted API calls on accidental pushes).
+
+All pushes use an inline token URL — never push to `origin` directly.
+
+### Push script (minimal GitHub API calls)
+
 ```bash
-/opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py "fix: describe what changed"
+# Hermes repo
+/opt/hermes/.venv/bin/python3 /opt/data/gh-push.py /opt/hermes-repo https://github.com/nexuslbs/hermes.git
+
+# Workspace repo
+/opt/hermes/.venv/bin/python3 /opt/data/gh-push.py /opt/workspace https://github.com/nexuslbs/hermes-workspace.git
 ```
 
-**Git identity:**
+The script:
+1. Generates a GH App installation token (1 API call)
+2. Pushes with inline token URL (1 API call)
+3. Fetches tracking ref so `git status` stays accurate (1 API call)
+
+Total: ~2-3 GitHub API calls — no wasted requests.
+
+### Identity
+
 - `user.name = $GIT_USER` (default: `Hermes Agent`)
 - `user.email = $GIT_USER_EMAIL` (default: `hermes@nexuslbs.io`)
 Set per-repo via `git config user.name/user.email`. There is NO global git config. NEVER use `hermes@nousresearch.com` — that email is verified under a different GitHub user and causes incorrect attribution.
@@ -128,12 +150,16 @@ All scripts share the same exclude list (`.cache/`, `.npm/`, `home/.local/**`, `
 ## Credentials
 
 - Manual credentials: `credentials/` directory
-- Auto-generated tokens: `credentials/auto/`
+- Auto-generated tokens: `credentials/auto/` — use `gh-app-token.py` for GH App tokens
 - Vault creds: `credentials/vault.env`
 - Vault URL: `http://hermes-vault:8200` (file backend, `services/` compose file)
-- Temp data: `/tmp/data/user/` — store credentials, wiki, apps, and other runtime data here; copy to `credentials/` for persistence, clean up temp after
+- Hostinger email: `credentials/.env` — `HOSTINGER_APP_PASSWORD` for IMAP/SMTP auth
+- Himalaya config reads from `credentials/.env` via `grep|cut|tr`, never embedded
 
-**Never embed secret values in chat responses.** Show masked/shortened values (last 4 chars) unless explicitly told otherwise.
+**Golden rule — never embed secrets in commands, configs, or chat:**
+- Source credentials from files via `grep | cut | tr` — never pass as CLI args or variables
+- If referencing a credential in chat, show at most the last 4 chars — preferably none
+- Tool output goes to Telegram, so any credential visible in output leaks to the chat
 
 ## Subagent / ACP Pattern
 
@@ -144,12 +170,13 @@ All scripts share the same exclude list (`.cache/`, `.npm/`, `home/.local/**`, `
 
 ## External Repos
 
+Non-`nexuslbs` repos must be forked under the `nexuslbs` org first — never write or PR to the original upstream directly.
+
 ## Container Management
 
 - **Start:** `docker compose up -d` in `/opt/hermes-repo/services/`
 - **Stop (shorthand):** stop all containers **except** `hermes`, `hermes-toolbox`, `hermes-tunnel`, `hermes-hindsight`
 - Hermes services: `hermes-loki`, `hermes-prometheus`, `hermes-grafana`, `hermes-vector`, `hermes-vault`, `hermes-files`, `hermes-cadvisor`
-
 
 ## Fast Actions — Quick Command Reference
 
@@ -177,8 +204,9 @@ Rebuild and start the hermes container:
 ```bash
 toolbox bash -c 'docker compose up -d --build hermes'
 ```
+
 ### `stats`
-Query the host node-exporter via `host.docker.internal:9100` (resolves via `extra_hosts` in toolbox) and return CPU idle % and memory used/total:
+Query the host node-exporter via `host.docker.internal:9100` and return CPU idle % and memory used/total:
 ```bash
 toolbox curl -s http://host.docker.internal:9100/metrics | python3 -c "
 import sys, re
@@ -192,253 +220,65 @@ print(f'Memory: {(t-a)/1e9:.0f} / {t/1e9:.0f} GB ({(t-a)/t*100:.0f}% used)')
 "
 ```
 
-Expected format:
-```
-CPU Idle: 83.0%
-Memory: 2 / 8 GB (23% used)
-```
-
 ### `ps`
-Show a detailed formatted overview using the template below.
-
-<details>
-<summary>📊 ps template</summary>
-
-```
-📊 Current Stats
-
-Sessions
-Active (Telegram DM)
-• ID: ...
-• Started: 15:56 UTC
-• Messages: ongoing
-• Tokens: last prompt: 45K
-
-Archived (ghost)
-• ID: ...
-• Started: 04:09 UTC
-• Messages: 0
-• Tokens: 23K in / 1.5K out
-
-Active Session Details
-- Display: ...
-- Last prompt tokens: 45,215
-- Estimated cost: ~$0.000006
-- Last updated: 20:40 UTC
-
-State DB
-- sessions: 1 archived (0 msgs)
-- messages: 0
-- integrity: ✅ ok
-
-Memory
-- agent memories: 7 entries (~2.1 KB)
-- user profile: 5 entries (~1.4 KB)
-
-Skills
-- total: 96 SKILL.md files across 24 categories
-
-Backup (just ran)
-- S3 bucket (B2): 1,917 objects — 173 MiB
-- Snapshot state.db: 144 KB
-- Last backup log: 37.5s, 3 files transferred, 100%
-
-Disk
-- Used: 34 GB / 62 GB (58%)
-
-Services (all healthy)
-cadvisor
-• Status: ✅ Up (healthy)
-
-files
-• Status: ✅ Up
-
-grafana
-• Status: ✅ Up
-
-loki
-• Status: ✅ Up
-
-prometheus
-• Status: ✅ Up
-
-vault
-• Status: ✅ Up
-
-vector
-• Status: ✅ Up
-```
-</details>
+Show docker containers with formatted status.
 
 ### `links`
-Return 4 bare inline-code URLs (one-tap copyable on Telegram), no labels:
-
-```
-`https://hermes-dashboard.mydomain.com`
-`https://hermes-grafana.mydomain.com`
-`https://hermes-vault.mydomain.com`
-`https://hermes-files.mydomain.com`
-```
+Return 4 bare inline-code URLs (one-tap copyable on Telegram), no labels.
 
 The actual domain is resolved from `GF_SERVER_ROOT_URL` in `/opt/data/credentials/services.env`.
 
 ### `logs` / `logs <service>`
-Tail the last 50 lines of a service container. Without arguments, shows the `hermes` container:
-
-```bash
-# Default: hermes container
-docker logs hermes --tail 50 --follow
-
-# Specific service: logs <service>
-docker logs hermes-<service> --tail 50
-```
+Tail the last 50 lines of a service container. Without arguments, shows the `hermes` container.
 
 ### `gitlog`
 Show the last 10 commits in the hermes-repo:
-
 ```bash
 toolbox bash -c 'cd /opt/hermes-repo && git log --oneline -10'
 ```
 
 ### `commit`
-Say "commit" and I'll check the changes in both repos (hermes-repo and workspace),
-write a descriptive message, and push each repo that has changes.
-
-**hermes-repo** — one-shot:
+Check both repos (hermes-repo and workspace) for unpushed commits. If found, push each with `gh-push.py`:
 ```bash
-/opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py "fix: describe what changed"
+# Hermes repo
+/opt/hermes/.venv/bin/python3 /opt/data/gh-push.py /opt/hermes-repo https://github.com/nexuslbs/hermes.git
+# Workspace repo
+/opt/hermes/.venv/bin/python3 /opt/data/gh-push.py /opt/workspace https://github.com/nexuslbs/hermes-workspace.git
 ```
 
-**workspace** — one-shot (set remote inline with token, push, clean):
+If uncommitted changes exist, stage and commit first with:
 ```bash
-source /opt/data/credentials/auto/gh-auth.sh && \
-cd /opt/workspace && \
-git add -A && \
-git -c user.name="$GIT_USER" -c user.email="$GIT_USER_EMAIL" \
-  commit -m "fix: describe what changed" && \
-git remote set-url origin "https://oauth2:${GITHUB_TOKEN}@${WORKSPACE_REPO}" && \
-git push && \
-git remote set-url origin "https://${WORKSPACE_REPO}"
+toolbox bash -c 'cd /opt/hermes-repo && git add -A && git -c user.name=\"Hermes Agent\" -c user.email=hermes@nexuslbs.io commit -m \"feat: description\"'
 ```
-
-
 
 ### `backup`
-Trigger an ad-hoc backup (syncs to `data/` prefix in S3). Run directly (not via toolbox — `/opt/data/` is read-only there):
-
 ```bash
 bash /opt/hermes-repo/scripts/hermes-backup.sh
 ```
 
 ### `restore`
-Restore data from the `data/` prefix in S3 (run directly):
-
 ```bash
 bash /opt/hermes-repo/scripts/hermes-restore.sh
 ```
 
 ### `restore checkpoint <YYYYMMDD>`
-Restore data from a specific checkpoint date (run directly):
-
 ```bash
 bash /opt/hermes-repo/scripts/hermes-restore-generic.sh "checkpoint/<YYYYMMDD>"
 ```
-Replace `<YYYYMMDD>` with the actual date (e.g., `20260609`).
 
 ### `checkpoint`
-Create a full date-stamped snapshot (expensive — duplicates all data to `checkpoint/<YYYYMMDD>/`). Run on explicit request only:
-
 ```bash
 bash /opt/hermes-repo/scripts/hermes-backup-generic.sh "checkpoint/$(date +%Y%m%d)"
 ```
 
 ### `session`
-Show current session details and token usage:
-
-```bash
-python3 << 'PYEOF'
-import json, datetime, sqlite3
-from pathlib import Path
-
-sfile = Path('/opt/data/sessions/sessions.json')
-if sfile.exists():
-    with open(sfile) as f:
-        data = json.load(f)
-    s = list(data.values())[0]
-    created = datetime.datetime.fromisoformat(s['created_at'])
-    now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
-    delta = now - created
-    hours = delta.total_seconds() / 3600
-
-    print('📊 Current Session')
-    print(f"ID: {s['session_id']}")
-    print(f"Created: {s['created_at'][:19]} UTC ({hours:.1f}h ago)")
-    print(f"Platform: {s['origin']['platform']} ({s['origin']['chat_type']})")
-    ctx = s.get('last_prompt_tokens', '?')
-    if isinstance(ctx, int):
-        print(f"Context: {ctx:,} / 1,000,000")
-    else:
-        print(f"Context: {ctx} / 1,000,000")
-    print()
-
-db = '/opt/data/state.db'
-if Path(db).exists():
-    conn = sqlite3.connect(db)
-    c = conn.cursor()
-    c.execute('SELECT COUNT(*), COALESCE(SUM(input_tokens),0), COALESCE(SUM(output_tokens),0) FROM sessions')
-    count, inp, out = c.fetchone()
-    print(f"📦 Archived Sessions")
-    print(f"Sessions: {count}")
-    print(f"Total tokens: {inp:,} in / {out:,} out")
-    conn.close()
-PYEOF
-```
-
-Expected format:
-```
-📊 Current Session
-ID: 20260607_155613_8521135c
-Created: 2026-06-07 15:56:13 UTC (8.0h ago)
-Platform: telegram (dm)
-Context: 134,467 / 1,000,000
-
-📦 Archived Sessions
-Sessions: 1
-Total tokens: 23,336 in / 1,499 out
-```
-
-
+Show current session details and token usage from state.db.
 
 ### `env`
-Show key configuration at a glance:
-
-```bash
-# Gathers from state.db, services.env, and .env
-echo "Provider: $(grep -m1 'provider:' /opt/hermes-repo/config.yaml 2>/dev/null || echo 'opencode-go')"
-echo "Model: $(sqlite3 /opt/data/state.db 'SELECT model FROM sessions ORDER BY started_at DESC LIMIT 1;' 2>/dev/null || echo 'deepseek-v4-flash')"
-grep GF_SERVER_ROOT_URL /opt/data/credentials/services.env
-df -h /opt/data | tail -1 | awk '{printf "Disk: %s / %s (%s)\n", $3, $2, $5}'
-```
-
-Expected format:
-```
-Provider: opencode-go
-Model: deepseek-v4-flash
-GF_SERVER_ROOT_URL=https://hermes-grafana.mydomain.com
-Disk: 34G / 62G (58%)
-```
+Show key configuration at a glance (provider, model, disk, services URL).
 
 ### `wiki`
-Review the current session and update the Obsidian wiki (`/opt/data/wiki/`) with information worth persisting since the last update:
-
-- **Daily-Log.md** — add notable events, decisions, errors fixed, config changes
-- **Projects/*.md** — update test results, add new projects created in workspace
-- **Troubleshooting.md** — add any new issues encountered and their fixes
-- Create new pages for significant new topics
-
-Run this after any session with lasting outcomes. If nothing notable, leave it clean — don't pad.
-
-Returns a summary of what was changed or added at the end.
+Review the current session and update the Obsidian wiki (`/opt/data/wiki/`) with information worth persisting since the last update.
 
 ## When in Doubt
 
@@ -447,18 +287,9 @@ Returns a summary of what was changed or added at the end.
 3. Load relevant skill for the task domain (`skill_view`).
 4. If genuinely stuck, ask the user — but try the above first.
 
+## Container Restarts (Cross-Container Pattern)
 
-### Container Restarts (Cross-Container Pattern)
+Never restart your own container directly — it kills the agent mid-session. Always restart from **outside**:
 
-Never restart your own container directly — it kills the agent mid-session, causing gateway shutdowns. Always restart from **outside** the target container:
-
-- **Restart hermes** (runs from toolbox container — outside):
-  ```bash
-  toolbox docker restart hermes
-  ```
-- **Restart toolbox** (runs directly — hermes is outside toolbox):
-  ```bash
-  docker restart hermes-toolbox
-  ```
-
-The toolbox container is a separate process, so `toolbox docker restart hermes` kills the hermes container cleanly from the outside. No self-destruction.
+- **Restart hermes:** `toolbox docker restart hermes`
+- **Restart toolbox:** `docker restart hermes-toolbox`
