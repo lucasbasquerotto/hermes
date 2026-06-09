@@ -38,5 +38,12 @@ RUN curl -L https://downloads.rclone.org/rclone-current-linux-amd64.zip -o /tmp/
     && rm /tmp/rclone.zip
 
 # Install hindsight-client for persistent memory support (Hindsight)
-# Pinned to match the version in lazy_deps.py (memory.hindsight)
-RUN uv pip install --python /opt/hermes/.venv/bin/python 'hindsight-client==0.6.1'
+# Pinned to match the version in lazy_deps.py (memory.hindsight).
+# Force-reinstall transitive deps to work around potential stale/corrupt
+# copies of urllib3, yarl, aiohttp, aiohttp-retry in the base image.
+RUN uv pip install --python /opt/hermes/.venv/bin/python \
+    --reinstall-package urllib3 \
+    --reinstall-package yarl \
+    --reinstall-package aiohttp \
+    --reinstall-package aiohttp-retry \
+    'hindsight-client==0.6.1'
