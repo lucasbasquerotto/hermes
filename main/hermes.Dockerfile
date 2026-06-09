@@ -36,3 +36,7 @@ RUN curl -L https://downloads.rclone.org/rclone-current-linux-amd64.zip -o /tmp/
     && unzip -j /tmp/rclone.zip "*/rclone" -d /opt/data/bin/ \
     && chmod +x /opt/data/bin/rclone \
     && rm /tmp/rclone.zip
+
+# Install hindsight-client for persistent memory support (Hindsight)
+# Pinned to match the version in lazy_deps.py (memory.hindsight)
+RUN uv pip install --python /opt/hermes/.venv/bin/python 'hindsight-client==0.6.1'
