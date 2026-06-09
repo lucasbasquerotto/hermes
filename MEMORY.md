@@ -381,6 +381,19 @@ Model: deepseek-v4-flash
 GF_SERVER_ROOT_URL=https://hermes-grafana.mydomain.com
 Disk: 34G / 62G (58%)
 ```
+
+### `wiki`
+Review the current session and update the Obsidian wiki (`/opt/data/wiki/`) with information worth persisting since the last update:
+
+- **Daily-Log.md** — add notable events, decisions, errors fixed, config changes
+- **Projects/*.md** — update test results, add new projects created in workspace
+- **Troubleshooting.md** — add any new issues encountered and their fixes
+- Create new pages for significant new topics
+
+Run this after any session with lasting outcomes. If nothing notable, leave it clean — don't pad.
+
+Returns a summary of what was changed or added at the end.
+
 ## When in Doubt
 
 1. Check this file for operational guidance.
