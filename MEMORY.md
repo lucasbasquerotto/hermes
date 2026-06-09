@@ -15,6 +15,15 @@ This file documents operational patterns the agent must follow when working in t
 
 **Rule:** Always use `toolbox` (wrapper for `docker compose exec toolbox`) for any file writes, git operations, or directory changes under `/opt/hermes-repo/` or `/opt/workspace/`. Run directly (without toolbox) for writes under `/opt/data/`.
 
+## Repo-Specific Notes
+
+- Check [README.md](README.md) first for repo-specific information before making assumptions about behavior or setup.
+- The `workspace/` folder in the target machine contains the `hermes-workspace` repo from the same GitHub organization.
+- At the root of `workspace/`, expect mostly `.gitignore` and `.md` files plus one directory per organization project.
+- Each project directory is named after the repository and typically contains `docker-compose.yml`, an optional `base.env`, and an optional `build/` directory for Docker build artifacts such as Dockerfiles.
+- The actual cloned repository lives under `workspace/<project>/repo/`.
+- A `workspace/<project>/.env` file may also exist with credentials derived from `base.env`.
+- `<project>` name must not start with `hermes` to avoid collisions when running it.
 
 ## /opt/data/ Ownership
 
