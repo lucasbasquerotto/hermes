@@ -134,7 +134,7 @@ services:
       - DEFAULT_WORKSPACE=/opt
     volumes:
       - /opt:/opt:ro
-      - /tmp/data/credentials/:/tmp/data/credentials/:rw
+      - /tmp/data/user/:/tmp/data/user/:rw
       - ./files/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
       - ./files/settings.json:/config/data/User/settings.json:ro
       - ./files/code-server-entrypoint.sh:/custom-entrypoint.sh:ro

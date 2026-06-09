@@ -131,7 +131,7 @@ All scripts share the same exclude list (`.cache/`, `.npm/`, `home/.local/**`, `
 - Auto-generated tokens: `credentials/auto/`
 - Vault creds: `credentials/vault.env`
 - Vault URL: `http://hermes-vault:8200` (file backend, `services/` compose file)
-- Temp creds: `/tmp/data/credentials/` — copy to `credentials/` for persistence, clean up temp after
+- Temp data: `/tmp/data/user/` — store credentials, wiki, apps, and other runtime data here; copy to `credentials/` for persistence, clean up temp after
 
 **Never embed secret values in chat responses.** Show masked/shortened values (last 4 chars) unless explicitly told otherwise.
 

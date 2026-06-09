@@ -59,7 +59,7 @@ services:
       - /opt/workspace:/opt/workspace:rw
       - /opt/data:/opt/data:ro
       - /tmp/data/grafana:/tmp/data/grafana:rw
-      - /tmp/data/credentials/:/tmp/data/credentials/:rw
+      - /tmp/data/user/:/tmp/data/user/:rw
       - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "host.docker.internal:host-gateway"
