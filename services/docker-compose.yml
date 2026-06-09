@@ -125,19 +125,19 @@ services:
   code-server:
     image: linuxserver/code-server:4.123.0
     container_name: hermes-files
+    entrypoint: ["/custom-entrypoint.sh"]
     restart: unless-stopped
     environment:
       - PUID=0
       - PGID=0
       - TZ=Etc/UTC
-      - INSTALL_EXTENSIONS=vscode-icons-team.vscode-icons
       - DEFAULT_WORKSPACE=/opt
     volumes:
       - /opt:/opt:ro
       - /tmp/data/credentials/:/tmp/data/credentials/:rw
       - ./files/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
       - ./files/settings.json:/config/data/User/settings.json:ro
-      - ./files/init/:/config/custom-cont-init.d/:ro
+      - ./files/code-server-entrypoint.sh:/custom-entrypoint.sh:ro
     expose:
       - "8443"
     networks:
