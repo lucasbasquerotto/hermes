@@ -294,11 +294,26 @@ toolbox bash -c 'cd /opt/hermes-repo && git log --oneline -10'
 ```
 
 ### `commit`
-Say "commit" and I'll check the changes, write a descriptive message, and push.
-Manual one-shot:
+Say "commit" and I'll check the changes in both repos (hermes-repo and workspace),
+write a descriptive message, and push each repo that has changes.
+
+**hermes-repo** — one-shot:
 ```bash
 /opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py "fix: describe what changed"
 ```
+
+**workspace** — one-shot (set remote inline with token, push, clean):
+```bash
+source /opt/data/credentials/auto/gh-auth.sh && \
+cd /opt/workspace && \
+git add -A && \
+git -c user.name="Hermes Agent" -c user.email=hermes@nexuslbs.io \
+  commit -m "fix: describe what changed" && \
+git remote set-url origin "https://oauth2:${GITHUB_TOKEN}@github.com/nexuslbs/hermes-workspace.git" && \
+git push && \
+git remote set-url origin https://github.com/nexuslbs/hermes-workspace.git
+```
+
 
 
 ### `backup`
