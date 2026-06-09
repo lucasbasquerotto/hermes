@@ -18,7 +18,7 @@ This file documents operational patterns the agent must follow when working in t
 ## Repo-Specific Notes
 
 - Check [README.md](README.md) for repo-specific information first before making assumptions about behavior or setup.
-- The `workspace/` folder in the target machine contains the `hermes-workspace` repo from the same GitHub organization.
+- The `workspace/` folder in the target machine contains the workspace repo from `$WORKSPACE_REPO`. Defined in `.env` (`WORKSPACE_REPO`).
 - At the root of `workspace/`, expect mostly `.gitignore` and `.md` files plus one directory per organization project.
 - Each project directory is named after the repository and typically contains `docker-compose.yml`, an optional `base.env`, and an optional `build/` directory for Docker build artifacts such as Dockerfiles.
 - The actual cloned repository lives under `workspace/<project>/repo/`.
@@ -106,8 +106,8 @@ The repo is at `github.com/nexuslbs/hermes`.
 ```
 
 **Git identity:**
-- `user.name = Hermes Agent`
-- `user.email = hermes@nexuslbs.io`
+- `user.name = $GIT_USER` (default: `Hermes Agent`)
+- `user.email = $GIT_USER_EMAIL` (default: `hermes@nexuslbs.io`)
 Set per-repo via `git config user.name/user.email`. There is NO global git config. NEVER use `hermes@nousresearch.com` — that email is verified under a different GitHub user and causes incorrect attribution.
 
 ## Gitignore Convention
@@ -314,11 +314,11 @@ write a descriptive message, and push each repo that has changes.
 source /opt/data/credentials/auto/gh-auth.sh && \
 cd /opt/workspace && \
 git add -A && \
-git -c user.name="Hermes Agent" -c user.email=hermes@nexuslbs.io \
+git -c user.name="$GIT_USER" -c user.email="$GIT_USER_EMAIL" \
   commit -m "fix: describe what changed" && \
-git remote set-url origin "https://oauth2:${GITHUB_TOKEN}@github.com/nexuslbs/hermes-workspace.git" && \
+git remote set-url origin "https://oauth2:${GITHUB_TOKEN}@${WORKSPACE_REPO}" && \
 git push && \
-git remote set-url origin https://github.com/nexuslbs/hermes-workspace.git
+git remote set-url origin "https://${WORKSPACE_REPO}"
 ```
 
 

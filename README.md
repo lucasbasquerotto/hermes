@@ -72,7 +72,7 @@ The flow is: `vagrant up` provisions the VM and starts Hermes **raw** (fresh, no
    S3_SECRET_KEY=your_s3_secret_key
    S3_ENDPOINT=https://s3.us-east-005.backblazeb2.com
    S3_REGION=us-east-005
-   S3_BUCKET=hermes-nexuslbs
+   S3_BUCKET=your-s3-bucket-name  # Set this to your actual S3-compatible bucket
    HERMES_DASHBOARD=1
    ```
 
@@ -192,8 +192,8 @@ GitHub App private key (PEM file). Required for Hermes to authenticate as a GitH
 **Important:**
 - The GitHub App **must be organization-scoped/restricted** to your GitHub organization (not user-wide). This ensures the app can only access repos within your org.
 - Generate from: **GitHub Settings - Developer Settings - GitHub Apps - your app - Generate a private key**.
-- The filename includes the date it was generated (e.g. `nexuslbs-app.2026-06-04.private-key.pem`).
-- The example file is intentionally empty - place the actual PEM in `/opt/data/credentials/`.
+- The filename includes the date it was generated and your org name (e.g. `your-app.2026-06-04.private-key.pem`). The actual file name may differ from the example — use whatever you named it.
+- The example file (`nexuslbs-app.2026-06-04.private-key.pem`) is intentionally empty - place the actual PEM in `/opt/data/credentials/`.
 - **Never commit the actual PEM file** to the repository.
 
 ## Ports

@@ -4,7 +4,7 @@ A subagent that implements features, fixes bugs, and manages PRs across repos.
 
 ## When to use
 
-- Forking an external repo under the nexuslbs org, making changes, and opening a PR
+- Forking an external repo under the <your-org> org, making changes, and opening a PR
 - Implementing a feature described in an issue or plan
 - Running code review gates (lint, security scan, type check) before committing
 - Multi-step git workflows (branch → commit → push → PR)
@@ -42,5 +42,5 @@ model:
 
 ## Notes
 
-- External repos must be forked under nexuslbs first — never PR to upstream directly
+- External repos must be forked under <your-org> first — never PR to upstream directly
 - After completion, verify the PR link exists before reporting success
