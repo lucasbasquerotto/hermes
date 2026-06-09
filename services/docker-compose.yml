@@ -130,11 +130,13 @@ services:
       - PUID=0
       - PGID=0
       - TZ=Etc/UTC
+      - INSTALL_EXTENSIONS=vscode-icons-team.vscode-icons
       - DEFAULT_WORKSPACE=/opt
     volumes:
       - /opt:/opt:ro
       - /tmp/data/credentials/:/tmp/data/credentials/:rw
       - ./files/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
+      - ./files/settings.json:/config/data/User/settings.json:ro
     expose:
       - "8443"
     networks:

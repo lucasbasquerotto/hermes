@@ -121,7 +121,7 @@ The root `.gitignore` must be minimal. Avoid redundant entries — e.g., `/tmp/`
 - `scripts/hermes-backup.sh` — daily backup wrapper, calls `hermes-backup-generic.sh data`. Runs via cron at 5AM UTC.
 - `scripts/hermes-restore.sh` — restore from `data/` prefix, calls `hermes-restore-generic.sh data`.
 
-All scripts share the same exclude list (`.cache/`, `.npm/`, `lsp/`, `logs/`, `sessions/`, etc.) and use `rclone sync --delete-excluded` to keep S3 clean.
+All scripts share the same exclude list (`.cache/`, `.npm/`, `home/.local/**`, `lsp/`, `logs/`, `sessions/`, etc.) and use `rclone sync --delete-excluded` to keep S3 clean.
 
 **Checkpoint:** `scripts/hermes-backup-generic.sh checkpoint/$(date +%Y%m%d)` creates a full snapshot under a date-stamped prefix. This is an expensive operation (full data duplication) — only run on explicit request.
 

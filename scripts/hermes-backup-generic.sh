@@ -17,7 +17,7 @@ mkdir -p "$HERMES_HOME/cron/output" "$HERMES_HOME/backup/grafana" "$HERMES_HOME/
 
 if [ -f "$HERMES_HOME/state.db" ]; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Creating consistent sqlite3 backup of state.db..." >> "$LOG"
-  sqlite3 "$HERMES_HOME/state.db" ".backup /opt/data/backup/state.db" >> "$LOG" 2>&1
+  sqlite3 "$HERMES_HOME/state.db" ".backup '${HERMES_HOME}/backup/state.db'" >> "$LOG" 2>&1
 else
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] state.db not found - skipping sqlite backup." >> "$LOG"
 fi
@@ -46,20 +46,20 @@ else
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] hermes-vault container not found - skipping." >> "$LOG"
 fi
 
-# Hindsight backup — pg_dump via unix socket, no stop required
+# Hindsight backup - pg_dump via unix socket, no stop required
 if docker inspect hermes-hindsight &>/dev/null; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Backing up hindsight database (pg_dump via unix socket)..." >> "$LOG"
   mkdir -p "$HERMES_HOME/backup/hindsight"
 
   docker exec hermes-hindsight python3 -c "
 import json, os, subprocess
-info = json.load(open(/home/hindsight/.pg0/instances/hindsight/instance.json))
-os.environ[LD_LIBRARY_PATH] = /home/hindsight/.pg0/installation/18.1.0/lib
-os.environ[PGPASSWORD] = info[password]
+info = json.load(open('/home/hindsight/.pg0/instances/hindsight/instance.json'))
+os.environ['LD_LIBRARY_PATH'] = '/home/hindsight/.pg0/installation/18.1.0/lib'
+os.environ['PGPASSWORD'] = info['password']
 subprocess.run([
-    /home/hindsight/.pg0/installation/18.1.0/bin/pg_dump,
-    -h, /tmp, -p, 5432, -U, hindsight, -d, hindsight,
-    --no-owner, --no-acl, --clean, --if-exists
+    '/home/hindsight/.pg0/installation/18.1.0/bin/pg_dump',
+    '-h', '/tmp', '-p', '5432', '-U', 'hindsight', '-d', 'hindsight',
+    '--no-owner', '--no-acl', '--clean', '--if-exists'
 ])
 " > "$HERMES_HOME/backup/hindsight/dump.sql" 2>> "$LOG"
 
@@ -91,6 +91,7 @@ $RCLONE --config "$S3_CONF" sync "$HERMES_HOME" "hermes-s3:${S3_BUCKET}/${DEST}"
   --exclude "cache/**" \
   --exclude ".npm/**" \
   --exclude "home/.npm/**" \
+  --exclude "home/.local/**" \
   --exclude ".npm/_npx/**" \
   --exclude "audio_cache/**" \
   --exclude "image_cache/**" \

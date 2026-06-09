@@ -52,6 +52,7 @@ $RCLONE --config "$S3_CONF" sync "hermes-s3:${S3_BUCKET}/${SRC}" "$HERMES_HOME" 
   --exclude "cache/**" \
   --exclude ".npm/**" \
   --exclude "home/.npm/**" \
+  --exclude "home/.local/**" \
   --exclude ".npm/_npx/**" \
   --exclude "audio_cache/**" \
   --exclude "image_cache/**" \
@@ -97,7 +98,7 @@ if [ -d "$HERMES_HOME/backup/vault" ] && [ "$(ls -A $HERMES_HOME/backup/vault 2>
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Vault data restored." | tee -a "$LOG"
 fi
 
-# Hindsight restore — stop, run PG from bundled binaries, restore dump from stdin, restart
+# Hindsight restore - stop, run PG from bundled binaries, restore dump from stdin, restart
 if [ -f "$HERMES_HOME/backup/hindsight/dump.sql" ]; then
   echo "[$(date +'%Y-%m-%d %H:%M:%S')] Restoring hindsight database..." | tee -a "$LOG"
 
@@ -110,26 +111,26 @@ if [ -f "$HERMES_HOME/backup/hindsight/dump.sql" ]; then
     -c '
 exec python3 -c "
 import json, os, subprocess, sys
-info = json.load(open(\\"/home/hindsight/.pg0/instances/hindsight/instance.json\\"))
-os.environ[\\"LD_LIBRARY_PATH\\"] = \\"/home/hindsight/.pg0/installation/18.1.0/lib\\"
-os.environ[\\"PGPASSWORD\\"] = info[\\"password\\"]
+info = json.load(open(\"/home/hindsight/.pg0/instances/hindsight/instance.json\"))
+os.environ[\"LD_LIBRARY_PATH\"] = \"/home/hindsight/.pg0/installation/18.1.0/lib\"
+os.environ[\"PGPASSWORD\"] = info[\"password\"]
 
-PGDATA = \\"/home/hindsight/.pg0/instances/hindsight/data\\"
-PGBIN = \\"/home/hindsight/.pg0/installation/18.1.0/bin\\"
+PGDATA = \"/home/hindsight/.pg0/instances/hindsight/data\"
+PGBIN = \"/home/hindsight/.pg0/installation/18.1.0/bin\"
 
-print(\\"Starting PostgreSQL...\\", flush=True)
-subprocess.run([PGBIN + \\"/pg_ctl\\", \\"-D\\", PGDATA, \\"-l\\", \\"/tmp/pg.log\\", \\"start\\"], check=True)
+print(\"Starting PostgreSQL...\", flush=True)
+subprocess.run([PGBIN + \"/pg_ctl\", \"-D\", PGDATA, \"-l\", \"/tmp/pg.log\", \"start\"], check=True)
 
-subprocess.run([PGBIN + \\"/pg_isready\\", \\"-h\\", \\"/tmp\\", \\"-q\\"], check=True)
+subprocess.run([PGBIN + \"/pg_isready\", \"-h\", \"/tmp\", \"-q\"], check=True)
 
-print(\\"Restoring from stdin...\\", flush=True)
-psql = subprocess.Popen([PGBIN + \\"/psql\\", \\"-h\\", \\"/tmp\\", \\"-U\\", \\"hindsight\\", \\"-d\\", \\"hindsight\\"], stdin=sys.stdin)
+print(\"Restoring from stdin...\", flush=True)
+psql = subprocess.Popen([PGBIN + \"/psql\", \"-h\", \"/tmp\", \"-U\", \"hindsight\", \"-d\", \"hindsight\"], stdin=sys.stdin)
 psql.wait()
 if psql.returncode != 0:
     raise SystemExit(psql.returncode)
 
-print(\\"Stopping PostgreSQL...\\", flush=True)
-subprocess.run([PGBIN + \\"/pg_ctl\\", \\"-D\\", PGDATA, \\"stop\\"], check=True)
+print(\"Stopping PostgreSQL...\", flush=True)
+subprocess.run([PGBIN + \"/pg_ctl\", \"-D\", PGDATA, \"stop\"], check=True)
 "
 ' < "$HERMES_HOME/backup/hindsight/dump.sql" >> "$LOG" 2>&1
 
