@@ -17,7 +17,7 @@ This file documents operational patterns the agent must follow when working in t
 
 ## Repo-Specific Notes
 
-- Check [README.md](README.md) first for repo-specific information before making assumptions about behavior or setup.
+- Check [README.md](README.md) for repo-specific information first before making assumptions about behavior or setup.
 - The `workspace/` folder in the target machine contains the `hermes-workspace` repo from the same GitHub organization.
 - At the root of `workspace/`, expect mostly `.gitignore` and `.md` files plus one directory per organization project.
 - Each project directory is named after the repository and typically contains `docker-compose.yml`, an optional `base.env`, and an optional `build/` directory for Docker build artifacts such as Dockerfiles.
@@ -32,6 +32,7 @@ If something is root-owned, fix with:
 ```bash
 docker run --rm -v /opt/data:/opt/data alpine chown -R 10000:10000 /opt/data/<path>
 ```
+
 ## Creating / Editing Files in the Repo or Workspace
 
 Use `toolbox <command>` for any file operations under `/opt/hermes-repo/` or `/opt/workspace/`. Examples:
@@ -94,7 +95,7 @@ toolbox chmod +x /tmp/data/scripts/my-script.sh
 toolbox /tmp/data/scripts/my-script.sh
 ```
 
-This pattern is ideal for complex, multi-step, or long commands where inline bash heredocs become fragile with quoting, escaping, and variable interpolation issues.
+This pattern is ideal for complex, multi-step, or long commands where inline bash heredocs become fragile with quoting, escaping, and interpolation issues.
 
 ## Git Operations
 The repo is at `github.com/nexuslbs/hermes`.
@@ -103,20 +104,26 @@ The repo is at `github.com/nexuslbs/hermes`.
 ```bash
 /opt/hermes/.venv/bin/python3 /opt/data/gh-final-push.py "fix: describe what changed"
 ```
+
 **Git identity:**
 - `user.name = Hermes Agent`
 - `user.email = hermes@nexuslbs.io`
 Set per-repo via `git config user.name/user.email`. There is NO global git config. NEVER use `hermes@nousresearch.com` — that email is verified under a different GitHub user and causes incorrect attribution.
+
 ## Gitignore Convention
 
 The root `.gitignore` must be minimal. Avoid redundant entries — e.g., `/tmp/` already covers everything under `/tmp/`, so `/tmp/data/restore/` is unnecessary.
 
 ## Backup & Restore Scripts
 
-- `scripts/hermes-backup.sh` — daily backup to S3 (B2 bucket). Runs via cron at 5AM UTC.
-- `scripts/hermes-restore.sh` — restore from S3. Uses `/tmp/hermes-restore-*.log` for logging (outside rclone exclude paths).
+- `scripts/hermes-backup-generic.sh <dest>` — generic backup to S3 under `bucket/<dest>/`. Handles sqlite snapshots, grafana/vault/hindsight dumps, then rclone syncs `/opt/data/` to S3. Used by both backup and checkpoint.
+- `scripts/hermes-restore-generic.sh <src>` — generic restore from S3 under `bucket/<src>/`. Syncs down, then restores state.db, grafana, vault, and hindsight.
+- `scripts/hermes-backup.sh` — daily backup wrapper, calls `hermes-backup-generic.sh data`. Runs via cron at 5AM UTC.
+- `scripts/hermes-restore.sh` — restore from `data/` prefix, calls `hermes-restore-generic.sh data`.
 
-Both scripts share the same exclude list (`.cache/`, `.npm/`, `lsp/`, `logs/`, `sessions/`, etc.) and use `rclone sync --delete-excluded` to keep S3 clean.
+All scripts share the same exclude list (`.cache/`, `.npm/`, `lsp/`, `logs/`, `sessions/`, etc.) and use `rclone sync --delete-excluded` to keep S3 clean.
+
+**Checkpoint:** `scripts/hermes-backup-generic.sh checkpoint/$(date +%Y%m%d)` creates a full snapshot under a date-stamped prefix. This is an expensive operation (full data duplication) — only run on explicit request.
 
 ## Credentials
 
@@ -176,7 +183,7 @@ Query the host node-exporter via `host.docker.internal:9100` (resolves via `extr
 toolbox curl -s http://host.docker.internal:9100/metrics | python3 -c "
 import sys, re
 data = sys.stdin.read()
-idle = sum(float(m) for m in re.findall(r'node_cpu_seconds_total\{[^}]*mode="idle"[^}]*\}\s+([\d.e+\-]+)', data))
+idle = sum(float(m) for m in re.findall(r'node_cpu_seconds_total\{[^}]*mode=\"idle\"[^}]*\}\s+([\d.e+\-]+)', data))
 all_ = sum(float(m) for m in re.findall(r'node_cpu_seconds_total\{[^}]*\}\s+([\d.e+\-]+)', data))
 print(f'CPU Idle: {idle/all_*100:.1f}%' if all_ else 'CPU Idle: N/A')
 t = float(re.search(r'node_memory_MemTotal_bytes\s+([\d.e+\-]+)', data).group(1))
@@ -317,17 +324,32 @@ git remote set-url origin https://github.com/nexuslbs/hermes-workspace.git
 
 
 ### `backup`
-Trigger an ad-hoc backup immediately (run directly, not via toolbox — `/opt/data/` is read-only there):
+Trigger an ad-hoc backup (syncs to `data/` prefix in S3). Run directly (not via toolbox — `/opt/data/` is read-only there):
 
 ```bash
 bash /opt/hermes-repo/scripts/hermes-backup.sh
 ```
 
 ### `restore`
-Restore data from S3 (run directly, not via toolbox — `/opt/data/` is read-only there):
+Restore data from the `data/` prefix in S3 (run directly):
 
 ```bash
 bash /opt/hermes-repo/scripts/hermes-restore.sh
+```
+
+### `restore checkpoint <YYYYMMDD>`
+Restore data from a specific checkpoint date (run directly):
+
+```bash
+bash /opt/hermes-repo/scripts/hermes-restore-generic.sh "checkpoint/<YYYYMMDD>"
+```
+Replace `<YYYYMMDD>` with the actual date (e.g., `20260609`).
+
+### `checkpoint`
+Create a full date-stamped snapshot (expensive — duplicates all data to `checkpoint/<YYYYMMDD>/`). Run on explicit request only:
+
+```bash
+bash /opt/hermes-repo/scripts/hermes-backup-generic.sh "checkpoint/$(date +%Y%m%d)"
 ```
 
 ### `session`
