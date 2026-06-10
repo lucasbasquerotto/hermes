@@ -46,4 +46,11 @@ RUN uv pip install --python /opt/hermes/.venv/bin/python \
     --reinstall-package yarl \
     --reinstall-package aiohttp \
     --reinstall-package aiohttp-retry \
-    'hindsight-client==0.6.1'
+    'hindsight-client==0.6.1' \
+    'websockets>=15'
+
+# Install Himalaya CLI for on-demand email reading (login flows)
+ARG HIMALAYA_VERSION=1.2.0
+RUN curl -sSL "https://github.com/pimalaya/himalaya/releases/download/v${HIMALAYA_VERSION}/himalaya.x86_64-linux.tgz" \
+    | tar -xz -C /usr/local/bin/ himalaya \
+    && chmod +x /usr/local/bin/himalaya
