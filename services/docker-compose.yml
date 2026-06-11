@@ -16,6 +16,10 @@ volumes:
     name: hermes-grafana
   hermes-prometheus-vol:
     name: hermes-prometheus
+  hermes-vault-file-vol:
+    name: hermes-vault-file
+  hermes-vault-logs-vol:
+    name: hermes-vault-logs
 
 services:
   vector:
@@ -155,6 +159,8 @@ services:
     entrypoint: /vault/config/entrypoint.sh
     volumes:
       - hermes-vault-vol:/vault/data:rw
+      - hermes-vault-file-vol:/vault/file:rw
+      - hermes-vault-logs-vol:/vault/logs:rw
       - ./vault/config.hcl:/vault/config/config.hcl:ro
       - ./vault/entrypoint.sh:/vault/config/entrypoint.sh:ro
     networks:
