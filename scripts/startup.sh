@@ -23,7 +23,7 @@ fi
 
 # ── 3. Attempt S3 restore (delegated to repo script) ────────────────
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Running restore from S3 backup..." | tee -a "$LOG"
-bash "$REPO_DIR/scripts/hermes-restore.sh" 2>&1 | tee -a "$LOG" || true
+timeout 300 bash "$REPO_DIR/scripts/hermes-restore.sh" 2>&1 | tee -a "$LOG" || true
 
 # Restore may delete cron/output/ (rclone --delete-excluded removes excluded dirs)
 mkdir -p "$HERMES_HOME/cron/output"
