@@ -94,7 +94,17 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", name: "disable-buildx-attestations", privileged: true, inline: <<-SHELL
     # Prevent buildx from adding provenance/sbom attestations by default
     # (avoids multi-platform errors and speeds up builds)
+
+    # For vagrant user (non-sudo shell)
     echo "export BUILDX_NO_DEFAULT_ATTESTATIONS=1" >> /home/vagrant/.bashrc
+
+    # System-wide (available to all users, including sudo)
+    grep -q "^BUILDX_NO_DEFAULT_ATTESTATIONS=" /etc/environment 2>/dev/null \
+      || echo "BUILDX_NO_DEFAULT_ATTESTATIONS=1" >> /etc/environment
+
+    # Preserve through sudo (env_keep)
+    grep -q "BUILDX_NO_DEFAULT_ATTESTATIONS" /etc/sudoers 2>/dev/null \
+      || echo "Defaults env_keep += \"BUILDX_NO_DEFAULT_ATTESTATIONS\"" >> /etc/sudoers
   SHELL
 
   # ── Install Node Exporter (host metrics for Prometheus) ──────────────

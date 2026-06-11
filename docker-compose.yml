@@ -29,6 +29,7 @@ services:
       - HERMES_DASHBOARD_HOST=0.0.0.0
       - HERMES_DASHBOARD_INSECURE=1
       - HERMES_YOLO_MODE=1
+      - BUILDX_NO_DEFAULT_ATTESTATIONS=1
     group_add:
       - "999"
     networks:
@@ -48,6 +49,8 @@ services:
     container_name: hermes-toolbox
     restart: unless-stopped
     command: sleep infinity
+    environment:
+      - BUILDX_NO_DEFAULT_ATTESTATIONS=1
     networks:
       - hermes-net
     logging:
