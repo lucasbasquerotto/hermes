@@ -28,6 +28,11 @@ set -e
 export HOME=/opt/data
 
 cd /opt/data
+
+# Normalize ownership of /opt on every start — ensures bind-mounted
+# files are owned by hermes:hermes regardless of host-side UID/GID.
+normalize
+
 # shellcheck disable=SC1091
 . /opt/hermes/.venv/bin/activate
 

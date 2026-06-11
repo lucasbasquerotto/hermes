@@ -19,10 +19,10 @@ services:
       - "8642"    # gateway API
       - "9119"    # dashboard
     volumes:
-      - /opt/data:/opt/data
+      - /opt/data:/opt/data:rw
+      - /opt/hermes-repo:/opt/hermes-repo:rw
+      - /opt/workspace:/opt/workspace:rw
       - /tmp/data:/tmp/data:rw
-      - /opt/hermes-repo:/opt/hermes-repo:ro
-      - /opt/workspace:/opt/workspace:ro
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - HERMES_DASHBOARD=1

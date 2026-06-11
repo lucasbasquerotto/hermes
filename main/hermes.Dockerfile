@@ -19,16 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends sudo \
     && echo "hermes ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/hermes \
     && chmod 440 /etc/sudoers.d/hermes
 
-# When HERMES_ALLOW_ROOT_GATEWAY=1, skip s6-setuidgid so the gateway
-# runs as root and preserves supplementary groups (e.g. docker GID)
-# from group_add. Replaces the original main-wrapper.sh.
-COPY main/main-wrapper.sh /opt/hermes/docker/main-wrapper.sh
-RUN chmod +x /opt/hermes/docker/main-wrapper.sh
-
-# Install toolbox wrapper script
-COPY main/toolbox-wrapper.sh /usr/local/bin/toolbox
-RUN chmod +x /usr/local/bin/toolbox
-
 # Install rclone for backup/restore S3 syncs
 RUN curl -L https://downloads.rclone.org/rclone-current-linux-amd64.zip -o /tmp/rclone.zip \
     && apt-get update && apt-get install -y --no-install-recommends unzip \
@@ -54,3 +44,18 @@ ARG HIMALAYA_VERSION=1.2.0
 RUN curl -sSL "https://github.com/pimalaya/himalaya/releases/download/v${HIMALAYA_VERSION}/himalaya.x86_64-linux.tgz" \
     | tar -xz -C /usr/local/bin/ himalaya \
     && chmod +x /usr/local/bin/himalaya
+
+# When HERMES_ALLOW_ROOT_GATEWAY=1, skip s6-setuidgid so the gateway
+# runs as root and preserves supplementary groups (e.g. docker GID)
+# from group_add. Replaces the original main-wrapper.sh.
+COPY main/main-wrapper.sh /opt/hermes/docker/main-wrapper.sh
+RUN chmod +x /opt/hermes/docker/main-wrapper.sh
+
+# Install toolbox wrapper script
+COPY main/toolbox-wrapper.sh /usr/local/bin/toolbox
+RUN chmod +x /usr/local/bin/toolbox
+
+# Install normalize script — fixes /opt ownership to hermes:hermes
+# on every container start (runs from main-wrapper.sh init)
+COPY main/normalize.sh /usr/local/bin/normalize
+RUN chmod +x /usr/local/bin/normalize
