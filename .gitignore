@@ -1,1 +1,12 @@
 /tmp/
+
+# Ignore credential and .env files
+.env
+*.env
+**/credentials/**
+**/secrets/**
+*.pem
+*cred*
+
+# But keep the pre-commit secret scanner in the repo
+!scripts/pre-commit-secret-scan.sh
