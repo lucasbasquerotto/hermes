@@ -13,3 +13,6 @@
 
 # Ignore user config (copy from config.example.yml)
 /config.yml
+
+# Ignore database files
+*.db
