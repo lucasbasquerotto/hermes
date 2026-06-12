@@ -68,6 +68,7 @@ $RCLONE --config "$S3_CONF" sync "hermes-s3:${S3_BUCKET}/${SRC}" "$HERMES_HOME" 
   --exclude "state.db-wal" \
   --exclude "state.db-shm" \
   --exclude "lsp/**" \
+  --exclude "backup/vector/**" \
   --log-level ERROR --stats-one-line 2>&1 | tee -a "$LOG"
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] S3 sync complete." | tee -a "$LOG"
