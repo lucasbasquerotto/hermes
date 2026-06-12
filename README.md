@@ -201,17 +201,18 @@ GitHub App private key (PEM file). Required for Hermes to authenticate as a GitH
 
 ## Ports
 
-**No ports are published on the host.** All services run inside the VM's Docker network and are accessed through the Cloudflare tunnel or other network routes:
+**No ports are published on the host.** All services run inside the Docker network and are only reachable from:
 
-| Service | Port | Access |
+- **Containers on `hermes-net`** — any container attached to the same Docker network can reach these ports by service name
+- **Cloudflare Tunnel** — the `hermes-tunnel` container exposes services through public hostnames configured in your Cloudflare Zero Trust dashboard
+
+| Service | Port | Container network name |
 |---|---|---|
-| Gateway API | 8642 | Via tunnel or VM's internal IP |
-| Dashboard | 9119 | Via tunnel or VM's internal IP (requires `HERMES_DASHBOARD=1`) |
-| Grafana | 3000 | Via tunnel or VM's internal IP (from `services/` stack) |
-| Vault | 8200 | Via tunnel or VM's internal IP (from `services/` stack) |
-| Code-server | 8443 | Via tunnel or VM's internal IP (from `services/` stack) |
-
-The Cloudflare Tunnel (`hermes-tunnel` container) exposes these services through public hostnames configured in your Cloudflare Zero Trust dashboard. The services can be accessed from any IP capable of reaching the tunnel endpoint.
+| Gateway API | 8642 | `hermes` |
+| Dashboard | 9119 | `hermes` (requires `HERMES_DASHBOARD=1`) |
+| Grafana | 3000 | `hermes-grafana` (from `services/` stack) |
+| Vault | 8200 | `hermes-vault` (from `services/` stack) |
+| Code-server | 8443 | `hermes-files` (from `services/` stack) |
 
 ## Customization
 
