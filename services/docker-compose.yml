@@ -20,6 +20,8 @@ volumes:
     name: hermes-vault-file
   hermes-vault-logs-vol:
     name: hermes-vault-logs
+  hermes-vector-vol:
+    name: hermes-vector
 
 services:
   vector:
@@ -34,7 +36,7 @@ services:
       - /var/log/journal:/var/log/journal:ro
       - /run/systemd/journal:/run/systemd/journal:ro
       - /etc/machine-id:/etc/machine-id:ro
-      - /opt/data/backup/vector:/var/lib/vector:rw
+      - hermes-vector-vol:/var/lib/vector:rw
     user: "0"
     networks:
       - lvg

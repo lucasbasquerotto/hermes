@@ -107,6 +107,7 @@ $RCLONE --config "$S3_CONF" sync "$HERMES_HOME" "hermes-s3:${S3_BUCKET}/${DEST}"
   --exclude "state.db-wal" \
   --exclude "state.db-shm" \
   --exclude "lsp/**" \
+  --exclude "backup/vector/**" \
   --log-level INFO >> "$LOG" 2>&1
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] Backup complete! (dest: ${DEST})" >> "$LOG"
