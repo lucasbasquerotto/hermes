@@ -201,12 +201,17 @@ GitHub App private key (PEM file). Required for Hermes to authenticate as a GitH
 
 ## Ports
 
-| Port | Service | Access |
-|---|---|---|
-| 8642 | Gateway API | `http://127.0.0.1:8642` |
-| 9119 | Dashboard | `http://127.0.0.1:9119` (requires `HERMES_DASHBOARD=1`) |
+**No ports are published on the host.** All services run inside the VM's Docker network and are accessed through the Cloudflare tunnel or other network routes:
 
-Both are only exposed to `127.0.0.1` on the host.
+| Service | Port | Access |
+|---|---|---|
+| Gateway API | 8642 | Via tunnel or VM's internal IP |
+| Dashboard | 9119 | Via tunnel or VM's internal IP (requires `HERMES_DASHBOARD=1`) |
+| Grafana | 3000 | Via tunnel or VM's internal IP (from `services/` stack) |
+| Vault | 8200 | Via tunnel or VM's internal IP (from `services/` stack) |
+| Code-server | 8443 | Via tunnel or VM's internal IP (from `services/` stack) |
+
+The Cloudflare Tunnel (`hermes-tunnel` container) exposes these services through public hostnames configured in your Cloudflare Zero Trust dashboard. The services can be accessed from any IP capable of reaching the tunnel endpoint.
 
 ## Customization
 
@@ -222,7 +227,7 @@ Copy `config.example.yml` to `config.yml` in the repo root and adjust values:
 
 - The VM has **no synced folders** — the host filesystem is inaccessible
 - Docker socket is mounted → Hermes can run Docker commands inside the VM
-- Gateway and dashboard ports are forwarded only to `127.0.0.1` on the host
+- **No ports are published on the host.** All services are accessed via the Cloudflare tunnel (dashboard, grafana, vault, code-server, etc.)
 - SSH agent forwarding is disabled
 - S3 credentials are stored in `/opt/data/.env` (inside the VM, backed up to S3)
 
