@@ -6,6 +6,8 @@ networks:
 volumes:
   hermes-hindsight-data:
     name: hermes-hindsight
+  hermes-qdrant-data:
+    name: hermes-qdrant
 
 services:
   hermes:
@@ -80,6 +82,21 @@ services:
       - hermes-hindsight-data:/home/hindsight/.pg0
     networks:
       - hermes-net
-    mem_limit: 1G
+    mem_limit: 2G
+    logging:
+      driver: journald
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: hermes-qdrant
+    restart: unless-stopped
+    expose:
+      - "6333"
+      - "6334"
+    volumes:
+      - hermes-qdrant-data:/qdrant/storage:rw
+    networks:
+      - hermes-net
+    mem_limit: 500M
     logging:
       driver: journald
