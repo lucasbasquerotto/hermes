@@ -1,6 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :*
 
+require 'yaml'
+
+config_file = File.exist?(File.join(__dir__, 'config.yml')) ? YAML.load_file(File.join(__dir__, 'config.yml')) : {}
+
+VM_MEMORY = config_file.dig('vm', 'memory') || 4096
+VM_CPUS   = config_file.dig('vm', 'cpus')   || 2
+VM_DISK   = config_file.dig('vm', 'disk')   || "50GB"
+
 Vagrant.configure("2") do |config|
   # ── Base Box ─────────────────────────────────────────────────────────
   config.vm.box = "generic/ubuntu2204"
@@ -10,16 +18,16 @@ Vagrant.configure("2") do |config|
 
   # ── VM Resources ────────────────────────────────────────────────────
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "8192"
-    vb.maxmemory = "8192" 
-    vb.cpus   = 2
+    vb.memory = VM_MEMORY.to_s
+    vb.maxmemory = VM_MEMORY.to_s
+    vb.cpus   = VM_CPUS
     vb.name   = "hermes-agent"
   end
 
   config.vm.provider "hyperv" do |hv|
-    hv.memory = "8192"
-    hv.maxmemory = "8192" 
-    hv.cpus   = 2
+    hv.memory = VM_MEMORY.to_s
+    hv.maxmemory = VM_MEMORY.to_s
+    hv.cpus   = VM_CPUS
     hv.vmname = "hermes-agent"
     hv.enable_enhanced_session_mode = false
   end
