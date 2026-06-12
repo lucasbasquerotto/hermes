@@ -128,14 +128,14 @@ services:
 
   code-server:
     image: linuxserver/code-server:4.123.0
-    container_name: hermes-files
+    container_name: hermes-code
     entrypoint: ["/custom-entrypoint.sh"]
     restart: unless-stopped
     environment:
       - PUID=0
       - PGID=0
       - TZ=Etc/UTC
-      - DEFAULT_WORKSPACE=/opt
+      - DEFAULT_WORKSPACE=/tmp/data/user/
     volumes:
       - /opt:/opt:ro
       - /tmp/data/user/:/tmp/data/user/:rw
@@ -147,6 +147,23 @@ services:
     networks:
       - hermes-net
     mem_limit: 1G
+    logging:
+      driver: journald
+
+  fileserver:
+    build:
+      context: fileserver
+      dockerfile: Dockerfile
+    container_name: hermes-files
+    restart: unless-stopped
+    volumes:
+      - /:/mnt/host:ro
+      - ./files/fileserver-nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+    networks:
+      - hermes-net
+    expose:
+      - "80"
+    mem_limit: 200M
     logging:
       driver: journald
 
