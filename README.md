@@ -210,12 +210,13 @@ Both are only exposed to `127.0.0.1` on the host.
 
 ## Customization
 
+Copy `config.example.yml` to `config.yml` in the repo root and adjust values:
+
 | Variable | Default | Where to change |
 |---|---|---|
-| VM memory | 8192 MB | `Vagrantfile` |
-| VM CPUs | 2 | `Vagrantfile` |
-| Hermes container memory | 4 GB | `docker-compose.yml` |
-| Hermes container CPUs | 2.0 | `docker-compose.yml` |
+| VM memory | 4096 MB | `config.yml` → `vm.memory` |
+| VM CPUs | 2 | `config.yml` → `vm.cpus` |
+| VM disk | 50 GB | `config.yml` → `vm.disk` (applied at VM creation) |
 
 ## Security Notes
 

@@ -10,3 +10,6 @@
 
 # But keep the pre-commit secret scanner in the repo
 !scripts/pre-commit-secret-scan.sh
+
+# Ignore user config (copy from config.example.yml)
+/config.yml
