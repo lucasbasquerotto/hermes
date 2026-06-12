@@ -13,6 +13,9 @@ Vagrant.configure("2") do |config|
   # ── Base Box ─────────────────────────────────────────────────────────
   config.vm.box = "generic/ubuntu2204"
 
+  # ── Primary Disk ─────────────────────────────────────────────────────
+  config.vm.disk :disk, size: VM_DISK, primary: true
+
   # ── No Host File Sharing (security) ─────────────────────────────────
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
