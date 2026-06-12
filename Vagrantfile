@@ -21,16 +21,16 @@ Vagrant.configure("2") do |config|
 
   # ── VM Resources ────────────────────────────────────────────────────
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = VM_MEMORY.to_s
-    vb.maxmemory = VM_MEMORY.to_s
-    vb.cpus   = VM_CPUS
+    vb.memory = VM_MEMORY.to_i
+    vb.maxmemory = VM_MEMORY.to_i
+    vb.cpus   = VM_CPUS.to_i
     vb.name   = "hermes-agent"
   end
 
   config.vm.provider "hyperv" do |hv|
-    hv.memory = VM_MEMORY.to_s
-    hv.maxmemory = VM_MEMORY.to_s
-    hv.cpus   = VM_CPUS
+    hv.memory = VM_MEMORY.to_i
+    hv.maxmemory = VM_MEMORY.to_i
+    hv.cpus   = VM_CPUS.to_i
     hv.vmname = "hermes-agent"
     hv.enable_enhanced_session_mode = false
   end
