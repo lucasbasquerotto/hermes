@@ -87,7 +87,7 @@ services:
       driver: journald
 
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.18.2
     container_name: hermes-qdrant
     restart: unless-stopped
     expose:
