@@ -17,3 +17,4 @@ services:
       - "host.docker.internal:host-gateway"
     logging:
       driver: journald
+    mem_limit: 1G
