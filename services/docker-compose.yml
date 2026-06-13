@@ -22,6 +22,16 @@ volumes:
     name: hermes-vault-logs
   hermes-vector-vol:
     name: hermes-vector
+  hermes-mm-db-vol:
+    name: hermes-mm-db
+  hermes-mm-config-vol:
+    name: hermes-mm-config
+  hermes-mm-data-vol:
+    name: hermes-mm-data
+  hermes-mm-logs-vol:
+    name: hermes-mm-logs
+  hermes-mm-plugins-vol:
+    name: hermes-mm-plugins
 
 services:
   vector:
@@ -187,5 +197,54 @@ services:
     cap_add:
       - IPC_LOCK
     mem_limit: 500M
+    logging:
+      driver: journald
+
+  mattermost-db:
+    image: postgres:16.14
+    container_name: hermes-mm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mmuser
+      POSTGRES_PASSWORD: A0zjIyo7gmw9qoCavUUA
+      POSTGRES_DB: mattermost
+    volumes:
+      - hermes-mm-db-vol:/var/lib/postgresql/data:rw
+    networks:
+      - hermes-net
+    mem_limit: 256M
+    logging:
+      driver: journald
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mmuser -d mattermost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mattermost:
+    image: mattermost/mattermost-team-edition:10.11.20
+    container_name: hermes-mattermost
+    restart: unless-stopped
+    depends_on:
+      mattermost-db:
+        condition: service_healthy
+    expose:
+      - "8065"
+    ports:
+      - "8065:8065"
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: "postgres://mmuser:A0zjIyo7gmw9qoCavUUA@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10"
+      MM_SERVICESETTINGS_SITEURL: "http://hermes-mattermost:8065"
+      MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION: "true"
+      MM_SERVICESETTINGS_ENABLEUSERACCESSTOKENS: "true"
+    volumes:
+      - hermes-mm-config-vol:/mattermost/config:rw
+      - hermes-mm-data-vol:/mattermost/data:rw
+      - hermes-mm-logs-vol:/mattermost/logs:rw
+      - hermes-mm-plugins-vol:/mattermost/plugins:rw
+    networks:
+      - hermes-net
+    mem_limit: 1G
     logging:
       driver: journald
