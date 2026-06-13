@@ -39,6 +39,9 @@ RUN uv pip install --python /opt/hermes/.venv/bin/python \
     'hindsight-client==0.6.1' \
     'websockets>=15'
 
+# Install fastembed for local CPU embedding (Qdrant wiki search, no external API)
+RUN uv pip install --python /opt/hermes/.venv/bin/python fastembed
+
 # Install Himalaya CLI for on-demand email reading (login flows)
 ARG HIMALAYA_VERSION=1.2.0
 RUN curl -sSL "https://github.com/pimalaya/himalaya/releases/download/v${HIMALAYA_VERSION}/himalaya.x86_64-linux.tgz" \

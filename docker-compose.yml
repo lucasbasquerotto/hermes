@@ -69,22 +69,23 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  hindsight:
-    image: ghcr.io/vectorize-io/hindsight:0.7.2
-    container_name: hermes-hindsight
-    restart: unless-stopped
-    expose:
-      - "8888"
-      - "9999"
-    env_file:
-      - /opt/data/.env
-    volumes:
-      - hermes-hindsight-data:/home/hindsight/.pg0
-    networks:
-      - hermes-net
-    mem_limit: 2G
-    logging:
-      driver: journald
+  # hindsight — disabled until Gemini budget returns (2026-06-13)
+  # hindsight:
+  #   image: ghcr.io/vectorize-io/hindsight:0.7.2
+  #   container_name: hermes-hindsight
+  #   restart: unless-stopped
+  #   expose:
+  #     - "8888"
+  #     - "9999"
+  #   env_file:
+  #     - /opt/data/.env
+  #   volumes:
+  #     - hermes-hindsight-data:/home/hindsight/.pg0
+  #   networks:
+  #     - hermes-net
+  #   mem_limit: 2G
+  #   logging:
+  #     driver: journald
 
   qdrant:
     image: qdrant/qdrant:v1.18.2
