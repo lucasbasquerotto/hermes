@@ -32,6 +32,8 @@ services:
       - HERMES_DASHBOARD_INSECURE=1
       - HERMES_YOLO_MODE=1
       - BUILDX_NO_DEFAULT_ATTESTATIONS=1
+    env_file:
+      - /opt/data/.env
     group_add:
       - "999"
     networks:

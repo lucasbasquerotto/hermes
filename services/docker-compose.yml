@@ -162,15 +162,16 @@ services:
     logging:
       driver: journald
 
-  fileserver:
+  hermes-proxy:
     build:
       context: files
       dockerfile: Dockerfile
-    container_name: hermes-files
+    container_name: hermes-proxy
     restart: unless-stopped
     volumes:
       - /:/mnt/host:ro
-      - ./files/fileserver-nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - ./files/hermes-proxy-nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      - /opt/data/credentials/mm_pat.txt:/etc/nginx/mm_pat.txt:ro
     networks:
       - hermes-net
     expose:
@@ -235,7 +236,7 @@ services:
     environment:
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: "postgres://mmuser:A0zjIyo7gmw9qoCavUUA@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10"
-      MM_SERVICESETTINGS_SITEURL: "http://hermes-mattermost:8065"
+      MM_SERVICESETTINGS_SITEURL: "http://hermes-mm.nexuslbs.org"
       MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION: "true"
       MM_SERVICESETTINGS_ENABLEUSERACCESSTOKENS: "true"
     volumes:
