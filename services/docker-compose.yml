@@ -138,30 +138,6 @@ services:
     logging:
       driver: journald
 
-  code-server:
-    image: linuxserver/code-server:4.123.0
-    container_name: hermes-code
-    entrypoint: ["/custom-entrypoint.sh"]
-    restart: unless-stopped
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=Etc/UTC
-      - DEFAULT_WORKSPACE=/tmp/data/user/
-    volumes:
-      - /opt:/opt:ro
-      - /tmp/data/user/:/tmp/data/user/:rw
-      - ./code/code-server-config.yaml:/config/data/.config/code-server/config.yaml:ro
-      - ./code/settings.json:/config/data/User/settings.json:ro
-      - ./code/code-server-entrypoint.sh:/custom-entrypoint.sh:ro
-    expose:
-      - "8443"
-    networks:
-      - hermes-net
-    mem_limit: 1G
-    logging:
-      driver: journald
-
   hermes-proxy:
     build:
       context: files
