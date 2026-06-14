@@ -206,9 +206,9 @@ services:
     container_name: hermes-mm-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: mmuser
-      POSTGRES_PASSWORD: A0zjIyo7gmw9qoCavUUA
-      POSTGRES_DB: mattermost
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - hermes-mm-db-vol:/var/lib/postgresql/data:rw
     networks:
@@ -234,11 +234,11 @@ services:
     ports:
       - "8065:8065"
     environment:
-      MM_SQLSETTINGS_DRIVERNAME: postgres
-      MM_SQLSETTINGS_DATASOURCE: "postgres://mmuser:A0zjIyo7gmw9qoCavUUA@mattermost-db:5432/mattermost?sslmode=disable&connect_timeout=10"
-      MM_SERVICESETTINGS_SITEURL: "http://hermes-mm.nexuslbs.org"
-      MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION: "true"
-      MM_SERVICESETTINGS_ENABLEUSERACCESSTOKENS: "true"
+      MM_SQLSETTINGS_DRIVERNAME: ${MM_SQLSETTINGS_DRIVERNAME}
+      MM_SQLSETTINGS_DATASOURCE: ${MM_SQLSETTINGS_DATASOURCE}
+      MM_SERVICESETTINGS_SITEURL: ${MM_SERVICESETTINGS_SITEURL}
+      MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION: ${MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION}
+      MM_SERVICESETTINGS_ENABLEUSERACCESSTOKENS: ${MM_SERVICESETTINGS_ENABLEUSERACCESSTOKENS}
     volumes:
       - hermes-mm-config-vol:/mattermost/config:rw
       - hermes-mm-data-vol:/mattermost/data:rw
