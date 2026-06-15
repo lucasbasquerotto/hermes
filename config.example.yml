@@ -1,4 +1,5 @@
 vm:
+  name: "hermes-agent-vm"
   memory: 8192
   cpus: 2
   disk: "200GB"
