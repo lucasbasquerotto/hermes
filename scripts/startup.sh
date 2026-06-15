@@ -32,12 +32,6 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ] && cd 
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Hermes container..." | tee -a "$LOG"
   docker compose up -d 2>&1 | tee -a "$LOG"
 
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Running restore from S3 backup inside Hermes container..." | tee -a "$LOG"
-  timeout 300 docker exec hermes bash /opt/hermes-repo/scripts/hermes-restore.sh 2>&1 | tee -a "$LOG" || true
-
-  # Restore may delete cron/output/ (rclone --delete-excluded removes excluded dirs)
-  mkdir -p "$HERMES_HOME/cron/output"
-
   # Also start monitoring services (Grafana, Prometheus, cAdvisor, Loki)
   if [ -f "$REPO_DIR/services/docker-compose.yml" ]; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting monitoring services..." | tee -a "$LOG"
@@ -54,6 +48,12 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ] && cd 
     fi
     sleep 2
   done
+
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Running restore from S3 backup inside Hermes container..." | tee -a "$LOG"
+  timeout 300 docker exec hermes bash /opt/hermes-repo/scripts/hermes-restore.sh 2>&1 | tee -a "$LOG" || true
+
+  # Restore may delete cron/output/ (rclone --delete-excluded removes excluded dirs)
+  mkdir -p "$HERMES_HOME/cron/output"
 
   # ── 5. Restore Grafana database from backup (if exists) ──────────────
   if [ -f "$HERMES_HOME/backup/grafana/grafana.db" ]; then
