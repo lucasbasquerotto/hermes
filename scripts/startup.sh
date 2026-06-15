@@ -21,23 +21,22 @@ if [ -f "$HERMES_HOME/.env" ]; then
   set +a
 fi
 
-# ── 3. Attempt S3 restore (delegated to repo script) ────────────────
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Running restore from S3 backup..." | tee -a "$LOG"
-timeout 300 bash "$REPO_DIR/scripts/hermes-restore.sh" 2>&1 | tee -a "$LOG" || true
-
-# Restore may delete cron/output/ (rclone --delete-excluded removes excluded dirs)
-mkdir -p "$HERMES_HOME/cron/output"
-
-# ── 4. Ensure HERMES_DASHBOARD=1 is set ─────────────────────────────
+# ── 3. Ensure HERMES_DASHBOARD=1 is set ─────────────────────────────
 if ! grep -q "^HERMES_DASHBOARD=" "$HERMES_HOME/.env" 2>/dev/null; then
   echo "HERMES_DASHBOARD=1" >> "$HERMES_HOME/.env"
 fi
 
-# ── 5. Start Docker containers via compose ───────────────────────────
+# ── 4. Start Docker containers via compose ───────────────────────────
 chown -R 10000:10000 "$HERMES_HOME"
 if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ] && cd "$REPO_DIR"; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting Hermes container..." | tee -a "$LOG"
   docker compose up -d 2>&1 | tee -a "$LOG"
+
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Running restore from S3 backup inside Hermes container..." | tee -a "$LOG"
+  timeout 300 docker exec hermes bash /opt/hermes-repo/scripts/hermes-restore.sh 2>&1 | tee -a "$LOG" || true
+
+  # Restore may delete cron/output/ (rclone --delete-excluded removes excluded dirs)
+  mkdir -p "$HERMES_HOME/cron/output"
 
   # Also start monitoring services (Grafana, Prometheus, cAdvisor, Loki)
   if [ -f "$REPO_DIR/services/docker-compose.yml" ]; then
@@ -56,7 +55,7 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ] && cd 
     sleep 2
   done
 
-  # ── 6. Restore Grafana database from backup (if exists) ──────────────
+  # ── 5. Restore Grafana database from backup (if exists) ──────────────
   if [ -f "$HERMES_HOME/backup/grafana/grafana.db" ]; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Grafana db backup found — restoring..." | tee -a "$LOG"
     docker stop hermes-grafana 2>&1 | tee -a "$LOG"
@@ -68,14 +67,14 @@ if command -v docker &>/dev/null && [ -f "$REPO_DIR/docker-compose.yml" ] && cd 
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Grafana db restore done." | tee -a "$LOG"
   fi
 
-  # ── 7. Provision Grafana dashboards ─────────────────────────────────
+  # ── 6. Provision Grafana dashboards ─────────────────────────────────
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Provisioning Grafana dashboards..." | tee -a "$LOG"
   GRAFANA_URL="http://localhost:3000"   bash "$REPO_DIR/scripts/provision-grafana-dashboards.sh" 2>&1 | tee -a "$LOG" || true
 else
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Docker or compose file not found — start containers manually." | tee -a "$LOG"
 fi
 
-# ── 8. Configure cron from existing jobs ─────────────────────────────
+# ── 7. Configure cron from existing jobs ─────────────────────────────
 if [ -f "$HERMES_HOME/cron/jobs.json" ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Cron jobs found — the scheduler will pick them up automatically." | tee -a "$LOG"
 fi
