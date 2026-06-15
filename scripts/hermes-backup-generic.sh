@@ -9,7 +9,7 @@ DEST="${1:?Usage: $0 <dest-path> (e.g. data or checkpoint/20260609)}"
 
 HERMES_HOME="${HERMES_HOME:-/opt/data}"
 REPO_DIR="${REPO_DIR:-/opt/hermes-repo}"
-RCLONE="${RCLONE:-/opt/data/bin/rclone}"
+RCLONE="${RCLONE:-/usr/local/bin/rclone}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG="$HERMES_HOME/cron/output/backup_${TIMESTAMP}.log"
 
