@@ -166,4 +166,3 @@ services:
     mem_limit: 500M
     logging:
       driver: journald
-      driver: journald
