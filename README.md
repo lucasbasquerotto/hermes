@@ -224,6 +224,32 @@ Copy `config.example.yml` to `config.yml` in the repo root and adjust values:
 | VM CPUs | 2 | `config.yml` → `vm.cpus` |
 | VM disk | 50 GB | `config.yml` → `vm.disk` (applied at VM creation) |
 
+## Hyper-V Disk Operations
+
+When using Hyper-V on Windows, the VM disk is a `.vhdx` file. If the VM runs out of space, you can verify the current max size and expand it.
+
+**Verify current max size.** Run this in PowerShell on the host:
+
+```powershell
+Get-VHD -Path "C:\...\.vagrant\machines\default\hyperv\Virtual Hard Disks\generic-ubuntu2204-hyperv-x64.vhdx" | Select-Object VhdType, Size, SizeMax
+```
+
+**Expand the disk.** Increase the `.vhdx` max size first (e.g. to 100GB), then resize the partitions inside the VM:
+
+1. In PowerShell on the host, resize the VHDX:
+   ```powershell
+   Resize-VHD -Path "C:\...\.vagrant\machines\default\hyperv\Virtual Hard Disks\generic-ubuntu2204-hyperv-x64.vhdx" -SizeBytes 100GB
+   ```
+2. SSH into the VM and expand the LVM partition:
+   ```bash
+   vagrant ssh
+   sudo growpart /dev/sda 3
+   sudo pvresize /dev/sda3
+   sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv --resizefs
+   ```
+
+The path to the `.vhdx` file depends on your Vagrant project directory — adjust accordingly.
+
 ## Security Notes
 
 - The VM has **no synced folders** — the host filesystem is inaccessible
