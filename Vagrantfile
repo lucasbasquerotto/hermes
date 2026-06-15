@@ -5,6 +5,7 @@ require 'yaml'
 
 config_file = File.exist?(File.join(__dir__, 'config.yml')) ? YAML.load_file(File.join(__dir__, 'config.yml')) : {}
 
+VM_NAME   = config_file.dig('vm', 'name')   || "hermes-agent"
 VM_MEMORY = config_file.dig('vm', 'memory') || 4096
 VM_CPUS   = config_file.dig('vm', 'cpus')   || 2
 VM_DISK   = config_file.dig('vm', 'disk')   || "50GB"
@@ -13,8 +14,10 @@ Vagrant.configure("2") do |config|
   # ── Base Box ─────────────────────────────────────────────────────────
   config.vm.box = "generic/ubuntu2204"
 
-  # ── Primary Disk ─────────────────────────────────────────────────────
-  config.vm.disk :disk, size: VM_DISK, primary: true
+  unless File.exist?(File.join(__dir__, '.vagrant/machines/default/hyperv/id'))
+    # ── Primary Disk ─────────────────────────────────────────────────────
+    config.vm.disk :disk, size: VM_DISK, primary: true
+  end
 
   # ── No Host File Sharing (security) ─────────────────────────────────
   config.vm.synced_folder ".", "/vagrant", disabled: true
@@ -24,14 +27,14 @@ Vagrant.configure("2") do |config|
     vb.memory = VM_MEMORY.to_i
     vb.maxmemory = VM_MEMORY.to_i
     vb.cpus   = VM_CPUS.to_i
-    vb.name   = "hermes-agent"
+    vb.name   = VM_NAME
   end
 
   config.vm.provider "hyperv" do |hv|
     hv.memory = VM_MEMORY.to_i
     hv.maxmemory = VM_MEMORY.to_i
     hv.cpus   = VM_CPUS.to_i
-    hv.vmname = "hermes-agent"
+    hv.vmname = VM_NAME
     hv.enable_enhanced_session_mode = false
   end
 
